@@ -529,7 +529,7 @@
                 <div class="empty-icon">💼</div>
                 <div class="empty-title">No Assets Found</div>
                 <div class="empty-description">Connect your wallet to view your portfolio</div>
-                <button class="btn btn-primary">Connect Wallet</button>
+                <button class="btn btn-primary" id="connectWalletBtn">Connect Wallet</button>
             </div>
         </div>
     </div>
@@ -567,17 +567,22 @@
             async init() {
                 console.log('💼 Initializing Portfolio...');
 
+                // Setup event listeners first
+                this.setupEventListeners();
+
                 // Check wallet
                 this.walletAddress = await getWalletAddress();
 
+                if (!this.walletAddress) {
+                    console.log('⚠️ No wallet connected - showing empty state');
+                    this.renderPortfolio();
+                    return;
+                }
+
+                console.log('✅ Wallet detected:', this.walletAddress);
+
                 // Load portfolio data
                 await this.loadPortfolio();
-
-                // Setup event listeners
-                this.setupEventListeners();
-
-                // Render UI
-                this.renderPortfolio();
 
                 console.log('✅ Portfolio initialized');
             },
@@ -687,11 +692,132 @@
                     lastUpdatedEl.textContent = `Last updated: ${this.lastUpdated.toLocaleTimeString()}`;
                 }
 
+                // Render stats grid
+                this.renderActiveChains();
+                this.renderTopHoldings();
+                this.renderPerformance();
+
                 // Render chain bars
                 this.renderChainBars();
 
                 // Render holdings table
                 this.renderHoldingsTable();
+            },
+
+            renderActiveChains() {
+                // Group holdings by chain and calculate totals
+                const chainTotals = {};
+                this.holdings.forEach(holding => {
+                    if (!chainTotals[holding.chain]) {
+                        chainTotals[holding.chain] = 0;
+                    }
+                    chainTotals[holding.chain] += holding.value;
+                });
+
+                // Sort by value descending
+                const sortedChains = Object.entries(chainTotals)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3); // Top 3 chains
+
+                // Update active chains count
+                document.getElementById('activeChains').textContent = Object.keys(chainTotals).length;
+
+                // Update chains list
+                const chainsList = document.getElementById('chainsList');
+                chainsList.innerHTML = '';
+
+                if (sortedChains.length === 0) {
+                    chainsList.innerHTML = '<li class="stat-list-item" style="color: var(--text-tertiary);">No chains found</li>';
+                    return;
+                }
+
+                sortedChains.forEach(([chain, value]) => {
+                    const li = document.createElement('li');
+                    li.className = 'stat-list-item';
+                    li.innerHTML = `
+                        <span class="stat-list-label">${chain.charAt(0).toUpperCase() + chain.slice(1)}</span>
+                        <span class="stat-list-value">${formatCurrency(value)}</span>
+                    `;
+                    chainsList.appendChild(li);
+                });
+            },
+
+            renderTopHoldings() {
+                const topHoldings = document.getElementById('topHoldings');
+                topHoldings.innerHTML = '';
+
+                if (this.holdings.length === 0) {
+                    topHoldings.innerHTML = '<li class="stat-list-item" style="color: var(--text-tertiary);">No holdings found</li>';
+                    return;
+                }
+
+                const totalValue = this.holdings.reduce((sum, h) => sum + h.value, 0);
+
+                // Get top 3 holdings
+                const top3 = this.holdings.slice(0, 3);
+
+                top3.forEach(holding => {
+                    const percentage = totalValue > 0 ? ((holding.value / totalValue) * 100).toFixed(1) : 0;
+                    const li = document.createElement('li');
+                    li.className = 'stat-list-item';
+                    li.innerHTML = `
+                        <span class="stat-list-label">${holding.token}</span>
+                        <span class="stat-list-value">${formatCurrency(holding.value)} (${percentage}%)</span>
+                    `;
+                    topHoldings.appendChild(li);
+                });
+
+                // Show remaining count if more than 3 holdings
+                if (this.holdings.length > 3) {
+                    const remaining = this.holdings.slice(3);
+                    const remainingValue = remaining.reduce((sum, h) => sum + h.value, 0);
+                    const remainingPercent = totalValue > 0 ? ((remainingValue / totalValue) * 100).toFixed(1) : 0;
+
+                    const li = document.createElement('li');
+                    li.className = 'stat-list-item';
+                    li.innerHTML = `
+                        <span class="stat-list-label">${remaining.length} more...</span>
+                        <span class="stat-list-value">${formatCurrency(remainingValue)} (${remainingPercent}%)</span>
+                    `;
+                    topHoldings.appendChild(li);
+                }
+            },
+
+            renderPerformance() {
+                const performanceList = document.querySelector('.stat-card:last-child .stat-list');
+
+                if (this.holdings.length === 0) {
+                    performanceList.innerHTML = '<li class="stat-list-item" style="color: var(--text-tertiary);">No performance data available</li>';
+                    return;
+                }
+
+                // Calculate weighted 24h change
+                const totalValue = this.holdings.reduce((sum, h) => sum + h.value, 0);
+                const totalChange24h = this.holdings.reduce((sum, h) => sum + (h.value * h.change24h / 100), 0);
+                const change24hPercent = totalValue > 0 ? (totalChange24h / totalValue * 100) : 0;
+
+                // For now, we only have real 24h data from Moralis
+                // 7d, 30d, and all-time would require historical data (not available in free tier)
+                performanceList.innerHTML = `
+                    <li class="stat-list-item">
+                        <span class="stat-list-label">24h Change</span>
+                        <span class="stat-list-value ${change24hPercent >= 0 ? 'change-positive' : 'change-negative'}">
+                            ${change24hPercent >= 0 ? '+' : ''}${change24hPercent.toFixed(2)}%
+                        </span>
+                    </li>
+                    <li class="stat-list-item">
+                        <span class="stat-list-label">7d Change</span>
+                        <span class="stat-list-value" style="color: var(--text-tertiary);">N/A</span>
+                    </li>
+                    <li class="stat-list-item">
+                        <span class="stat-list-label">30d Change</span>
+                        <span class="stat-list-value" style="color: var(--text-tertiary);">N/A</span>
+                    </li>
+                    <li class="stat-list-item">
+                        <span class="stat-list-label">All Time</span>
+                        <span class="stat-list-value" style="color: var(--text-tertiary);">N/A</span>
+                    </li>
+                `;
             },
 
             renderChainBars() {
@@ -803,6 +929,20 @@
                ============================================================== */
 
             setupEventListeners() {
+                // Connect wallet button
+                document.getElementById('connectWalletBtn').addEventListener('click', async () => {
+                    try {
+                        showNotification('Connecting to MetaMask...', 'info', 2000);
+                        const wallet = await connectWallet();
+                        this.walletAddress = wallet.address;
+                        showNotification('Wallet connected! Loading portfolio...', 'success', 2000);
+                        await this.loadPortfolio();
+                    } catch (error) {
+                        console.error('Failed to connect wallet:', error);
+                        showNotification('Failed to connect wallet: ' + error.message, 'error', 5000);
+                    }
+                });
+
                 // Refresh button
                 document.getElementById('refreshBtn').addEventListener('click', () => {
                     if (!this.isLoading) {
