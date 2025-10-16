@@ -1183,6 +1183,28 @@
         }
 
         /* ==================== RESPONSIVE ==================== */
+
+        /* Tablet (600px-1024px) */
+        @media (min-width: 600px) and (max-width: 1024px) {
+            main {
+                padding: var(--space-xl) var(--space-lg);
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .slippage-control {
+                max-width: 600px;
+                margin: 0 auto var(--space-lg);
+            }
+
+            .route-stats {
+                font-size: 11px;
+            }
+        }
+
+        /* Mobile Large (768px and below) */
         @media (max-width: 768px) {
             header {
                 padding: var(--space-md) var(--space-lg);
@@ -1206,6 +1228,181 @@
 
             .modal-content {
                 max-height: 90vh;
+            }
+
+            .route-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .route-stat:last-child {
+                grid-column: 1 / -1;
+            }
+        }
+
+        /* Mobile Standard (414px and below) */
+        @media (max-width: 414px) {
+            .token-selector {
+                min-width: 110px;
+                padding: 10px 12px;
+            }
+
+            .logo-avatar {
+                width: 32px;
+                height: 32px;
+            }
+
+            .logo {
+                font-size: 20px;
+                gap: 8px;
+            }
+
+            .beta-badge {
+                font-size: 10px;
+                padding: 3px 10px;
+            }
+
+            .amount-input {
+                font-size: 20px;
+                padding: 6px 10px;
+            }
+
+            .modal-content {
+                max-width: calc(100vw - 32px);
+                margin: 0 16px;
+            }
+
+            .notification {
+                left: var(--space-md);
+                right: var(--space-md);
+                max-width: calc(100vw - 32px);
+                bottom: var(--space-md);
+            }
+
+            .slippage-button {
+                min-width: 52px;
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            .custom-slippage {
+                min-width: 70px;
+                font-size: 12px;
+            }
+
+            .wallet-connect {
+                font-size: 13px;
+                padding: 10px 16px;
+            }
+
+            .swap-title {
+                font-size: 20px;
+            }
+
+            .quote-row {
+                padding: 10px 0;
+            }
+
+            .quote-label,
+            .quote-value {
+                font-size: 13px;
+            }
+
+            .footer-links {
+                gap: var(--space-md);
+            }
+
+            .footer-link {
+                font-size: 13px;
+            }
+        }
+
+        /* Landscape Mobile (height < 500px) */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .amount-input {
+                font-size: 18px;
+            }
+
+            .swap-card {
+                margin-bottom: var(--space-md);
+            }
+
+            .modal-content {
+                max-height: 85vh;
+            }
+
+            header {
+                padding: var(--space-sm) var(--space-lg);
+            }
+
+            .logo {
+                font-size: 22px;
+            }
+
+            .stats-section {
+                margin-top: var(--space-lg);
+                padding: var(--space-md);
+            }
+        }
+
+        /* Touch Target Optimization (mobile with touch) */
+        @media (max-width: 768px) and (pointer: coarse) {
+            .token-selector,
+            .swap-direction-button,
+            .settings-button {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .max-button {
+                min-height: 32px;
+                padding: 6px 12px;
+            }
+
+            .slippage-button,
+            .route-card {
+                min-height: 48px;
+            }
+
+            .wallet-connect {
+                min-height: 44px;
+            }
+
+            .swap-button {
+                min-height: 56px;
+            }
+        }
+
+        /* Safe Area Insets (iPhone notch/Dynamic Island) */
+        @supports (padding: max(0px)) {
+            header {
+                padding-left: max(var(--space-xl), env(safe-area-inset-left));
+                padding-right: max(var(--space-xl), env(safe-area-inset-right));
+                padding-top: max(var(--space-lg), env(safe-area-inset-top));
+            }
+
+            main {
+                padding-left: max(var(--space-lg), env(safe-area-inset-left));
+                padding-right: max(var(--space-lg), env(safe-area-inset-right));
+            }
+
+            .notification {
+                bottom: max(var(--space-lg), calc(env(safe-area-inset-bottom) + var(--space-md)));
+                left: max(var(--space-lg), env(safe-area-inset-left));
+                right: max(var(--space-lg), env(safe-area-inset-right));
+            }
+
+            footer {
+                padding-bottom: max(var(--space-lg), calc(env(safe-area-inset-bottom) + var(--space-md)));
+            }
+        }
+
+        /* High DPI/Retina Optimization */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .token-icon img,
+            .token-list-icon img,
+            .logo-avatar {
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges;
             }
         }
 
