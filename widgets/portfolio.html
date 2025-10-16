@@ -604,32 +604,49 @@
                 showNotification('Loading portfolio from blockchain...', 'info', 3000);
 
                 try {
-                    // Build chain query string
-                    const chainQuery = MORALIS_CONFIG.supportedChains
-                        .map(chain => `chain=${chain}`)
-                        .join('&');
+                    // Fetch tokens from each chain separately
+                    const allTokens = [];
 
-                    // Call Moralis API
-                    const response = await fetch(
-                        `${MORALIS_CONFIG.baseUrl}/wallets/${this.walletAddress}/tokens?${chainQuery}`,
-                        {
-                            method: 'GET',
-                            headers: {
-                                'accept': 'application/json',
-                                'X-API-Key': MORALIS_CONFIG.apiKey
+                    for (const chain of MORALIS_CONFIG.supportedChains) {
+                        try {
+                            console.log(`📡 Fetching tokens from ${chain}...`);
+
+                            const response = await fetch(
+                                `${MORALIS_CONFIG.baseUrl}/wallets/${this.walletAddress}/tokens?chain=${chain}`,
+                                {
+                                    method: 'GET',
+                                    headers: {
+                                        'accept': 'application/json',
+                                        'X-API-Key': MORALIS_CONFIG.apiKey
+                                    }
+                                }
+                            );
+
+                            if (!response.ok) {
+                                console.warn(`⚠️ ${chain} API error: ${response.status} ${response.statusText}`);
+                                continue; // Skip this chain and continue with others
                             }
-                        }
-                    );
 
-                    if (!response.ok) {
-                        throw new Error(`Moralis API error: ${response.status} ${response.statusText}`);
+                            const data = await response.json();
+                            console.log(`✅ ${chain}: ${data.result?.length || 0} tokens`);
+
+                            // Add chain identifier to each token
+                            const tokens = (data.result || []).map(token => ({
+                                ...token,
+                                chain: chain // Ensure chain is set
+                            }));
+
+                            allTokens.push(...tokens);
+                        } catch (chainError) {
+                            console.error(`❌ Error fetching ${chain}:`, chainError);
+                            // Continue with other chains even if one fails
+                        }
                     }
 
-                    const data = await response.json();
-                    console.log('📊 Moralis response:', data);
+                    console.log(`📊 Total tokens fetched: ${allTokens.length}`);
 
-                    // Transform Moralis response to portfolio format
-                    this.holdings = (data.result || [])
+                    // Transform combined response to portfolio format
+                    this.holdings = allTokens
                         .filter(token => {
                             // Filter out zero balances and spam tokens
                             const balance = parseFloat(token.balance_formatted || 0);
@@ -649,7 +666,8 @@
                         .sort((a, b) => b.value - a.value); // Sort by USD value descending
 
                     this.lastUpdated = new Date();
-                    console.log(`✅ Portfolio loaded: ${this.holdings.length} tokens, Total value: $${this.holdings.reduce((sum, h) => sum + h.value, 0).toFixed(2)}`);
+                    const totalValue = this.holdings.reduce((sum, h) => sum + h.value, 0);
+                    console.log(`✅ Portfolio loaded: ${this.holdings.length} tokens, Total value: $${totalValue.toFixed(2)}`);
 
                     if (this.holdings.length === 0) {
                         showNotification('No tokens found in wallet', 'info');
