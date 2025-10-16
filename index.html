@@ -350,7 +350,7 @@
         }
 
         .amount-input {
-            background: transparent;
+            background: rgba(0, 0, 0, 0.2);
             border: none;
             font-size: 32px;
             font-weight: 700;
@@ -358,6 +358,13 @@
             outline: none;
             flex: 1;
             min-width: 0;
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: background var(--transition-standard) var(--ease);
+        }
+
+        .amount-input:focus {
+            background: rgba(0, 0, 0, 0.3);
         }
 
         .amount-input::placeholder {
@@ -1010,7 +1017,25 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: var(--bg-tertiary);
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(62, 184, 95, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--cbo-green-start);
+            overflow: hidden;
+        }
+
+        .token-list-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .token-list-icon.fallback {
+            background: linear-gradient(135deg, rgba(62, 184, 95, 0.15) 0%, rgba(48, 209, 88, 0.1) 100%);
+            border: 1px solid rgba(62, 184, 95, 0.3);
         }
 
         .token-list-info {
@@ -2130,8 +2155,8 @@
 
             document.getElementById('fromSymbol').textContent = fromToken.symbol;
             document.getElementById('toSymbol').textContent = toToken.symbol;
-            document.getElementById('fromIcon').innerHTML = `<img src="${fromToken.logo}" alt="${fromToken.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${fromToken.symbol.slice(0,3)}'">`;
-            document.getElementById('toIcon').innerHTML = `<img src="${toToken.logo}" alt="${toToken.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${toToken.symbol.slice(0,3)}'">`;
+            setTokenIcon('fromIcon', fromToken);
+            setTokenIcon('toIcon', toToken);
 
             document.getElementById('fromAmount').value = '';
             document.getElementById('toAmount').value = '';
@@ -2179,6 +2204,42 @@
             renderTokenList();
         }
 
+        // Helper function to get token icon with fallbacks
+        function getTokenIconElement(token) {
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'token-list-icon';
+
+            // Try multiple CDN sources
+            const iconSources = [
+                token.logo, // Primary source from RocketX
+                `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${token.address}/logo.png`,
+                `https://assets.coingecko.com/coins/images/1/small/${token.symbol.toLowerCase()}.png`
+            ];
+
+            const img = document.createElement('img');
+            let currentIndex = 0;
+
+            const tryNextSource = () => {
+                if (currentIndex < iconSources.length) {
+                    img.src = iconSources[currentIndex];
+                    currentIndex++;
+                } else {
+                    // All sources failed - use text fallback
+                    iconDiv.classList.add('fallback');
+                    iconDiv.innerHTML = token.symbol.slice(0, 3).toUpperCase();
+                }
+            };
+
+            img.onerror = tryNextSource;
+            img.onload = () => {
+                iconDiv.appendChild(img);
+            };
+
+            tryNextSource();
+
+            return iconDiv;
+        }
+
         function renderTokenList() {
             const container = document.getElementById('tokenList');
             container.innerHTML = '';
@@ -2193,27 +2254,64 @@
                 item.className = 'token-list-item';
                 item.onclick = () => chooseToken(token);
 
-                item.innerHTML = `
-                    <img src="${token.logo}" alt="${token.symbol}" class="token-list-icon" onerror="this.src='https://cdn.rocketx.exchange/pd135zq/images/icons-greyscaled/ethereum-grey.png'">
-                    <div class="token-list-info">
-                        <div class="token-list-symbol">${token.symbol}</div>
-                        <div class="token-list-name">${token.name}</div>
-                    </div>
+                const iconElement = getTokenIconElement(token);
+
+                const info = document.createElement('div');
+                info.className = 'token-list-info';
+                info.innerHTML = `
+                    <div class="token-list-symbol">${token.symbol}</div>
+                    <div class="token-list-name">${token.name}</div>
                 `;
 
+                item.appendChild(iconElement);
+                item.appendChild(info);
                 container.appendChild(item);
             });
+        }
+
+        // Helper to set token icon with multi-tier fallbacks
+        function setTokenIcon(elementId, token) {
+            const iconElement = document.getElementById(elementId);
+            const iconSources = [
+                token.logo,
+                `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${token.address}/logo.png`,
+                `https://assets.coingecko.com/coins/images/1/small/${token.symbol.toLowerCase()}.png`
+            ];
+
+            let currentIndex = 0;
+            const img = document.createElement('img');
+            img.style.cssText = 'width: 100%; height: 100%; border-radius: 50%;';
+
+            const tryNextSource = () => {
+                if (currentIndex < iconSources.length) {
+                    img.src = iconSources[currentIndex];
+                    currentIndex++;
+                } else {
+                    // All failed - use text fallback
+                    iconElement.style.background = 'linear-gradient(135deg, rgba(62, 184, 95, 0.2) 0%, rgba(48, 209, 88, 0.1) 100%)';
+                    iconElement.style.border = '1px solid rgba(62, 184, 95, 0.3)';
+                    iconElement.textContent = token.symbol.slice(0, 3).toUpperCase();
+                }
+            };
+
+            img.onerror = tryNextSource;
+            img.onload = () => {
+                iconElement.innerHTML = '';
+                iconElement.appendChild(img);
+            };
+
+            tryNextSource();
         }
 
         function chooseToken(token) {
             if (currentTokenSelector === 'from') {
                 fromToken = token;
                 document.getElementById('fromSymbol').textContent = token.symbol;
-                document.getElementById('fromIcon').innerHTML = `<img src="${token.logo}" alt="${token.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${token.symbol.slice(0,3)}'">`;
+                setTokenIcon('fromIcon', token);
             } else {
                 toToken = token;
                 document.getElementById('toSymbol').textContent = token.symbol;
-                document.getElementById('toIcon').innerHTML = `<img src="${token.logo}" alt="${token.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${token.symbol.slice(0,3)}'">`;
+                setTokenIcon('toIcon', token);
             }
 
             document.getElementById('fromAmount').value = '';
@@ -2331,8 +2429,8 @@
 
         // ==================== INITIALIZATION ====================
         function initializeTokenIcons() {
-            document.getElementById('fromIcon').innerHTML = `<img src="${fromToken.logo}" alt="${fromToken.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${fromToken.symbol.slice(0,3)}'">`;
-            document.getElementById('toIcon').innerHTML = `<img src="${toToken.logo}" alt="${toToken.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${toToken.symbol.slice(0,3)}'">`;
+            setTokenIcon('fromIcon', fromToken);
+            setTokenIcon('toIcon', toToken);
         }
 
         function loadSettings() {
