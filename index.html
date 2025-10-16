@@ -121,6 +121,17 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--cbo-green-start);
+            object-fit: cover;
         }
 
         .beta-badge {
@@ -375,12 +386,19 @@
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--cbo-green-start) 0%, var(--cbo-green-end) 100%);
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
             font-weight: 700;
+            overflow: hidden;
+        }
+
+        .token-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .token-symbol {
@@ -1186,8 +1204,11 @@
 <body>
     <header>
         <div class="logo-section">
-            <h1 class="logo">💪 BroFit Swap</h1>
-            <span class="beta-badge">Premium</span>
+            <h1 class="logo">
+                <img src="https://imqpmvkloxoxibbrwwef.supabase.co/storage/v1/object/public/avatars/cbo/cbo_deal_maker.jpg" alt="CBO" class="logo-avatar">
+                BROFIT
+            </h1>
+            <span class="beta-badge">Swap</span>
         </div>
         <button class="wallet-connect" id="walletButton" onclick="connectWallet()">
             🔌 Connect Wallet
