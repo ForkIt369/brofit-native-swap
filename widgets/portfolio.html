@@ -569,8 +569,11 @@
                 // Setup event listeners first
                 this.setupEventListeners();
 
-                // Check wallet
-                this.walletAddress = await getWalletAddress();
+                // Listen for wallet updates from parent dashboard
+                this.listenForWalletUpdates();
+
+                // Check wallet using triple-fallback
+                this.walletAddress = this.getConnectedWallet();
 
                 if (!this.walletAddress) {
                     console.log('⚠️ No wallet connected - showing empty state');
@@ -584,6 +587,66 @@
                 await this.loadPortfolio();
 
                 console.log('✅ Portfolio initialized');
+            },
+
+            /**
+             * Get connected wallet address from multiple sources
+             */
+            getConnectedWallet() {
+                // Try to get wallet address from multiple sources
+
+                // 1. Try parent window's state manager (if in iframe)
+                try {
+                    if (window.parent && window.parent.stateManager) {
+                        const address = window.parent.stateManager.getState('wallet.address');
+                        if (address) {
+                            console.log('✅ Got wallet from parent state:', address);
+                            return address;
+                        }
+                    }
+                } catch (error) {
+                    // Cross-origin iframe - can't access parent
+                    console.log('⚠️ Cannot access parent state (cross-origin)');
+                }
+
+                // 2. Try localStorage
+                const stored = localStorage.getItem('brofit_connected_wallet');
+                if (stored) {
+                    try {
+                        const wallet = JSON.parse(stored);
+                        console.log('✅ Got wallet from localStorage:', wallet.address);
+                        return wallet.address;
+                    } catch (error) {
+                        console.error('Failed to parse stored wallet:', error);
+                    }
+                }
+
+                // 3. Try window.ethereum directly
+                if (window.ethereum && window.ethereum.selectedAddress) {
+                    console.log('✅ Got wallet from window.ethereum:', window.ethereum.selectedAddress);
+                    return window.ethereum.selectedAddress;
+                }
+
+                console.log('⚠️ No wallet found');
+                return null;
+            },
+
+            /**
+             * Listen for wallet messages from parent
+             */
+            listenForWalletUpdates() {
+                window.addEventListener('message', (event) => {
+                    if (event.data.type === 'WALLET_CONNECTED') {
+                        console.log('📨 Received wallet connected message:', event.data.address);
+                        this.walletAddress = event.data.address;
+                        this.loadPortfolio(); // Reload with new wallet
+                    } else if (event.data.type === 'WALLET_DISCONNECTED') {
+                        console.log('📨 Received wallet disconnected message');
+                        this.walletAddress = null;
+                        this.holdings = [];
+                        this.renderPortfolio();
+                    }
+                });
             },
 
             /* ================================================================
@@ -946,20 +1009,6 @@
                ============================================================== */
 
             setupEventListeners() {
-                // Connect wallet button
-                document.getElementById('connectWalletBtn').addEventListener('click', async () => {
-                    try {
-                        showNotification('Connecting to MetaMask...', 'info', 2000);
-                        const wallet = await connectWallet();
-                        this.walletAddress = wallet.address;
-                        showNotification('Wallet connected! Loading portfolio...', 'success', 2000);
-                        await this.loadPortfolio();
-                    } catch (error) {
-                        console.error('Failed to connect wallet:', error);
-                        showNotification('Failed to connect wallet: ' + error.message, 'error', 5000);
-                    }
-                });
-
                 // Refresh button
                 document.getElementById('refreshBtn').addEventListener('click', () => {
                     if (!this.isLoading) {
