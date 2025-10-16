@@ -653,10 +653,10 @@
                         return;
                     }
 
-                    // No transactions found - show demo data with banner
-                    console.log('ℹ️ No transactions found - showing demo data');
-                    this.transactions = this.mockTransactions;
-                    this.showDemoBanner();
+                    // No transactions found - show empty state
+                    console.log('ℹ️ No transactions found - showing empty state');
+                    this.transactions = [];
+                    this.showNoTransactionsState();
 
                 } catch (error) {
                     console.error('Failed to load transactions:', error);
@@ -667,9 +667,9 @@
                         this.transactions = localTransactions;
                         this.showApiErrorBanner();
                     } else {
-                        // Last resort: show mock data with banner
-                        this.transactions = this.mockTransactions;
-                        this.showDemoBanner();
+                        // No transactions available
+                        this.transactions = [];
+                        this.showNoTransactionsState();
                     }
                 }
             },
@@ -704,31 +704,18 @@
             },
 
             /**
-             * Show demo mode banner
+             * Show no transactions state
              */
-            showDemoBanner() {
-                // Check if banner already exists
-                if (document.querySelector('.demo-banner')) {
-                    return;
-                }
+            showNoTransactionsState() {
+                const emptyState = document.getElementById('emptyState');
+                emptyState.querySelector('.empty-title').textContent = 'No Transactions Yet';
+                emptyState.querySelector('.empty-description').innerHTML =
+                    'Make your first swap or bridge transaction to see it appear here';
+                emptyState.classList.remove('hidden');
 
-                const banner = document.createElement('div');
-                banner.className = 'demo-banner';
-                banner.style.cssText = `
-                    background: rgba(255, 214, 10, 0.2);
-                    border: 1px solid #FFD60A;
-                    border-radius: 8px;
-                    padding: 12px 16px;
-                    margin-bottom: 20px;
-                    text-align: center;
-                    color: var(--text-primary);
-                `;
-                banner.innerHTML = '<strong>⚠️ Demo Mode:</strong> Showing sample transactions. Make your first swap or bridge to see real history.';
-
-                document.querySelector('.history-container').insertBefore(
-                    banner,
-                    document.querySelector('.filters-section')
-                );
+                // Hide filters and pagination
+                document.querySelector('.filters-section').style.display = 'none';
+                document.getElementById('pagination').style.display = 'none';
             },
 
             /**
