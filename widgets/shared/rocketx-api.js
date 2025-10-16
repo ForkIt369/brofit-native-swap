@@ -343,12 +343,14 @@ class RocketXAPI {
 
         history.unshift({
             ...transaction,
-            timestamp: Date.now()
+            timestamp: transaction.timestamp || Date.now()
         });
 
         // Keep only last 100 transactions
         const trimmed = history.slice(0, 100);
         localStorage.setItem(key, JSON.stringify(trimmed));
+
+        console.log(`✅ Saved transaction ${transaction.hash} to localStorage`);
     }
 
     /**
@@ -357,6 +359,105 @@ class RocketXAPI {
     _getLocalTransactionHistory(walletAddress) {
         const key = `brofit_tx_history_${walletAddress.toLowerCase()}`;
         return JSON.parse(localStorage.getItem(key) || '[]');
+    }
+
+    /**
+     * Record a new swap transaction
+     * Saves to both API (if available) and localStorage
+     */
+    async recordSwap(params) {
+        const {
+            walletAddress,
+            hash,
+            fromToken,
+            fromAmount,
+            toToken,
+            toAmount,
+            chain,
+            gasFee = '$0.00',
+            status = 'pending'
+        } = params;
+
+        const transaction = {
+            hash,
+            type: 'swap',
+            fromAmount: `${fromAmount} ${fromToken}`,
+            toAmount: `${toAmount} ${toToken}`,
+            chain,
+            status,
+            timestamp: Date.now(),
+            gasFee
+        };
+
+        // Save to localStorage immediately
+        this.saveTransactionLocal(walletAddress, transaction);
+
+        // Try to save to API (best effort)
+        try {
+            await this._request('/v1/transactions', {
+                method: 'POST',
+                body: JSON.stringify({
+                    walletAddress,
+                    ...transaction
+                })
+            });
+            console.log('✅ Transaction saved to RocketX API');
+        } catch (error) {
+            console.warn('Failed to save to API, localStorage saved:', error.message);
+        }
+
+        return transaction;
+    }
+
+    /**
+     * Record a new bridge transaction
+     */
+    async recordBridge(params) {
+        const {
+            walletAddress,
+            hash,
+            fromToken,
+            fromAmount,
+            toToken,
+            toAmount,
+            fromChain,
+            toChain,
+            gasFee = '$0.00',
+            bridgeFee = '$0.00',
+            status = 'pending'
+        } = params;
+
+        const transaction = {
+            hash,
+            type: 'bridge',
+            fromAmount: `${fromAmount} ${fromToken}`,
+            toAmount: `${toAmount} ${toToken}`,
+            chain: fromChain,
+            toChain,
+            status,
+            timestamp: Date.now(),
+            gasFee,
+            bridgeFee
+        };
+
+        // Save to localStorage immediately
+        this.saveTransactionLocal(walletAddress, transaction);
+
+        // Try to save to API (best effort)
+        try {
+            await this._request('/v1/transactions', {
+                method: 'POST',
+                body: JSON.stringify({
+                    walletAddress,
+                    ...transaction
+                })
+            });
+            console.log('✅ Transaction saved to RocketX API');
+        } catch (error) {
+            console.warn('Failed to save to API, localStorage saved:', error.message);
+        }
+
+        return transaction;
     }
 
     /* ========================================================================

@@ -527,6 +527,15 @@
             async init() {
                 console.log('📜 Initializing Transaction History...');
 
+                // Check wallet connection
+                this.walletAddress = this.getConnectedWallet();
+
+                if (!this.walletAddress) {
+                    console.log('⚠️ No wallet connected - showing empty state');
+                    this.showWalletRequiredState();
+                    return;
+                }
+
                 // Load transactions
                 await this.loadTransactions();
 
@@ -541,18 +550,155 @@
             },
 
             /* ================================================================
+               WALLET CONNECTION
+               ============================================================== */
+
+            getConnectedWallet() {
+                // Try to get wallet address from global state or localStorage
+                if (window.walletState && window.walletState.address) {
+                    return window.walletState.address;
+                }
+
+                const stored = localStorage.getItem('brofit_connected_wallet');
+                return stored ? JSON.parse(stored).address : null;
+            },
+
+            showWalletRequiredState() {
+                const emptyState = document.getElementById('emptyState');
+                emptyState.querySelector('.empty-title').textContent = 'Connect Your Wallet';
+                emptyState.querySelector('.empty-description').innerHTML =
+                    'Connect your wallet to view your transaction history<br><br>' +
+                    '<button class="btn btn-primary" onclick="window.parent.postMessage({ type: \'CONNECT_WALLET\' }, \'*\')">Connect Wallet</button>';
+                emptyState.classList.remove('hidden');
+
+                // Hide filters and pagination
+                document.querySelector('.filters-section').style.display = 'none';
+                document.getElementById('pagination').style.display = 'none';
+            },
+
+            /* ================================================================
                DATA LOADING
                ============================================================== */
 
             async loadTransactions() {
                 try {
-                    // In production, would fetch from RocketX API or blockchain
-                    // For prototype, use mock data
+                    console.log(`🔄 Loading transactions for ${this.walletAddress}...`);
+
+                    // Try RocketX API first
+                    const apiTransactions = await rocketxAPI.getTransactionHistory(
+                        this.walletAddress,
+                        { limit: 100, type: 'all' }
+                    );
+
+                    if (apiTransactions && apiTransactions.length > 0) {
+                        console.log(`✅ Loaded ${apiTransactions.length} transactions from RocketX API`);
+                        this.transactions = this.normalizeTransactions(apiTransactions);
+                        return;
+                    }
+
+                    // Fallback to localStorage
+                    const localTransactions = this.getLocalTransactions();
+
+                    if (localTransactions && localTransactions.length > 0) {
+                        console.log(`✅ Loaded ${localTransactions.length} transactions from localStorage`);
+                        this.transactions = localTransactions;
+                        return;
+                    }
+
+                    // No transactions found - show demo data with banner
+                    console.log('ℹ️ No transactions found - showing demo data');
                     this.transactions = this.mockTransactions;
+                    this.showDemoBanner();
+
                 } catch (error) {
                     console.error('Failed to load transactions:', error);
-                    this.transactions = [];
+
+                    // Try localStorage fallback
+                    const localTransactions = this.getLocalTransactions();
+                    if (localTransactions && localTransactions.length > 0) {
+                        this.transactions = localTransactions;
+                        this.showApiErrorBanner();
+                    } else {
+                        // Last resort: show mock data with banner
+                        this.transactions = this.mockTransactions;
+                        this.showDemoBanner();
+                    }
                 }
+            },
+
+            /**
+             * Normalize API response to consistent format
+             */
+            normalizeTransactions(apiTxs) {
+                return apiTxs.map(tx => ({
+                    hash: tx.hash || tx.txHash || tx.transactionHash,
+                    type: tx.type || (tx.bridgeId ? 'bridge' : 'swap'),
+                    fromAmount: `${tx.fromAmount || tx.amount} ${tx.fromToken || tx.tokenIn}`,
+                    toAmount: `${tx.toAmount || tx.amountOut} ${tx.toToken || tx.tokenOut}`,
+                    chain: tx.chain || tx.network || tx.chainId,
+                    toChain: tx.toChain || tx.destinationChain,
+                    status: tx.status || 'confirmed',
+                    timestamp: tx.timestamp || tx.blockTimestamp || Date.now(),
+                    gasFee: tx.gasFee || tx.gasUsed || '$0.00',
+                    block: tx.blockNumber || tx.block,
+                    bridgeFee: tx.bridgeFee,
+                    error: tx.error
+                }));
+            },
+
+            /**
+             * Get transactions from localStorage
+             */
+            getLocalTransactions() {
+                const key = `brofit_tx_history_${this.walletAddress.toLowerCase()}`;
+                const stored = localStorage.getItem(key);
+                return stored ? JSON.parse(stored) : [];
+            },
+
+            /**
+             * Show demo mode banner
+             */
+            showDemoBanner() {
+                const banner = document.createElement('div');
+                banner.className = 'demo-banner';
+                banner.style.cssText = `
+                    background: rgba(255, 214, 10, 0.2);
+                    border: 1px solid #FFD60A;
+                    border-radius: 8px;
+                    padding: 12px 16px;
+                    margin-bottom: 20px;
+                    text-align: center;
+                    color: var(--text-primary);
+                `;
+                banner.innerHTML = '<strong>⚠️ Demo Mode:</strong> Showing sample transactions. Make your first swap or bridge to see real history.';
+
+                document.querySelector('.history-container').insertBefore(
+                    banner,
+                    document.querySelector('.filters-section')
+                );
+            },
+
+            /**
+             * Show API error banner
+             */
+            showApiErrorBanner() {
+                const banner = document.createElement('div');
+                banner.className = 'api-error-banner';
+                banner.style.cssText = `
+                    background: rgba(255, 159, 10, 0.2);
+                    border: 1px solid #FF9F0A;
+                    border-radius: 8px;
+                    padding: 12px 16px;
+                    margin-bottom: 20px;
+                    text-align: center;
+                    color: var(--text-primary);
+                `;
+                banner.innerHTML = '<strong>⚠️ API Offline:</strong> Showing cached transactions from browser storage.';
+
+                document.querySelector('.history-container').insertBefore(
+                    banner,
+                    document.querySelector('.filters-section')
+                );
             },
 
             /* ================================================================
