@@ -12,7 +12,7 @@ const { chromium } = require('playwright');
   try {
     // Test 1: Load Dashboard Home
     console.log('📊 Test 1: Loading dashboard home...');
-    await page.goto('https://brofit-native-swap-78v5w6cmo-will31s-projects.vercel.app/', {
+    await page.goto('https://brofit-native-swap-631zq3el2-will31s-projects.vercel.app/', {
       waitUntil: 'networkidle'
     });
     await page.waitForTimeout(2000);
@@ -146,7 +146,7 @@ const { chromium } = require('playwright');
     console.log('✅ All widgets load properly');
     console.log('✅ Responsive design working');
     console.log('✅ State management initialized');
-    console.log('\n📊 Dashboard URL: https://brofit-native-swap-78v5w6cmo-will31s-projects.vercel.app/');
+    console.log('\n📊 Dashboard URL: https://brofit-native-swap-5ie9v8skb-will31s-projects.vercel.app/');
     console.log('📸 Screenshots saved to: ./screenshots/');
 
   } catch (error) {
