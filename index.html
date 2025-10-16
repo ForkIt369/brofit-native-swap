@@ -3,48 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BroFit Swap | Native RocketX Integration</title>
-    <meta name="description" content="Custom-built swap interface powered by RocketX API with BroFit green branding">
+    <title>BroFit Swap | Premium RocketX Integration</title>
+    <meta name="description" content="Best-in-class swap interface with 12-route comparison, powered by RocketX API and CBO green branding">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
+        /* ==================== CSS RESET ==================== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        /* ==================== CSS VARIABLES (BroHub Design System v1.0) ==================== */
+        :root {
+            /* CBO Green Gradient */
+            --cbo-green-start: #3EB85F;
+            --cbo-green-end: #30D158;
+
+            /* Base Colors */
+            --bg-primary: #0A0A0A;
+            --bg-secondary: rgba(26, 26, 36, 0.6);
+            --bg-tertiary: rgba(15, 15, 20, 0.8);
+
+            /* Text */
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.4);
+
+            /* Borders */
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-medium: rgba(255, 255, 255, 0.12);
+
+            /* Alerts */
+            --alert-success: #3EB85F;
+            --alert-warning: #FB923C;
+            --alert-error: #f44336;
+
+            /* Typography */
+            --font-display: 'Space Grotesk', system-ui, sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            /* Spacing (8px grid) */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+
+            /* Transitions */
+            --transition-fast: 100ms;
+            --transition-standard: 200ms;
+            --transition-slow: 320ms;
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ==================== BASE STYLES ==================== */
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            background: oklch(10% 0.01 140);
-            color: oklch(98% 0.01 140);
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* Header */
+        /* ==================== GLASSMORPHISM ==================== */
+        .glass {
+            background: var(--bg-secondary);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .glass-strong {
+            background: var(--bg-tertiary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-medium);
+        }
+
+        /* ==================== HEADER ==================== */
         header {
-            background: linear-gradient(135deg, oklch(15% 0.05 140) 0%, oklch(12% 0.03 140) 100%);
-            border-bottom: 2px solid #3EB85F;
-            padding: 24px 40px;
+            padding: var(--space-lg) var(--space-xl);
+            border-bottom: 2px solid var(--cbo-green-start);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: var(--space-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-tertiary);
+            backdrop-filter: blur(20px);
         }
 
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: var(--space-md);
         }
 
         .logo {
+            font-family: var(--font-display);
             font-size: 32px;
             font-weight: 800;
-            background: linear-gradient(135deg, #3EB85F 0%, #5CD87F 100%);
+            background: linear-gradient(135deg, var(--cbo-green-start) 0%, var(--cbo-green-end) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -52,28 +124,29 @@
         }
 
         .beta-badge {
-            background: linear-gradient(135deg, #3EB85F 0%, #5CD87F 100%);
-            color: oklch(10% 0 0);
+            background: linear-gradient(135deg, var(--cbo-green-start) 0%, var(--cbo-green-end) 100%);
+            color: var(--bg-primary);
             font-size: 11px;
             font-weight: 700;
             padding: 4px 12px;
             border-radius: 20px;
             letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .wallet-connect {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #3EB85F 0%, #5CD87F 100%);
-            color: oklch(10% 0 0);
+            padding: 12px var(--space-lg);
+            background: linear-gradient(135deg, var(--cbo-green-start) 0%, var(--cbo-green-end) 100%);
+            color: var(--bg-primary);
             border: none;
             border-radius: 12px;
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 300ms ease;
+            transition: all var(--transition-standard) var(--ease);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: var(--space-sm);
         }
 
         .wallet-connect:hover {
@@ -82,46 +155,129 @@
         }
 
         .wallet-connect.connected {
-            background: oklch(20% 0.05 140);
-            color: #3EB85F;
-            border: 2px solid #3EB85F;
+            background: var(--bg-secondary);
+            color: var(--cbo-green-start);
+            border: 2px solid var(--cbo-green-start);
         }
 
-        /* Main Container */
+        /* ==================== MAIN CONTAINER ==================== */
         main {
             flex: 1;
             max-width: 600px;
             width: 100%;
             margin: 0 auto;
-            padding: 40px 24px;
+            padding: var(--space-2xl) var(--space-lg);
         }
 
-        /* Swap Card */
+        /* ==================== SLIPPAGE CONTROL ==================== */
+        .slippage-control {
+            padding: var(--space-lg);
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: var(--space-lg);
+        }
+
+        .slippage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .slippage-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .slippage-value {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--cbo-green-start);
+            font-weight: 600;
+        }
+
+        .slippage-buttons {
+            display: flex;
+            gap: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        .slippage-button {
+            flex: 1;
+            min-width: 60px;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-standard) var(--ease);
+        }
+
+        .slippage-button:hover {
+            border-color: var(--cbo-green-start);
+            color: var(--text-primary);
+        }
+
+        .slippage-button.active {
+            background: var(--cbo-green-start);
+            border-color: var(--cbo-green-start);
+            color: var(--bg-primary);
+        }
+
+        .custom-slippage {
+            flex: 1;
+            min-width: 80px;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .custom-slippage:focus {
+            outline: none;
+            border-color: var(--cbo-green-start);
+            box-shadow: 0 0 0 3px rgba(62, 184, 95, 0.1);
+        }
+
+        /* ==================== SWAP CARD ==================== */
         .swap-card {
-            background: oklch(15% 0.02 140);
+            background: var(--bg-secondary);
+            backdrop-filter: blur(12px);
             border-radius: 24px;
-            border: 2px solid oklch(20% 0.05 140);
+            border: 1px solid var(--border-subtle);
             overflow: hidden;
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
         }
 
         .swap-header {
-            padding: 24px;
-            border-bottom: 1px solid oklch(20% 0.03 140);
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--border-subtle);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .swap-title {
+            font-family: var(--font-display);
             font-size: 24px;
             font-weight: 700;
-            color: oklch(98% 0.02 140);
+            color: var(--text-primary);
         }
 
         .settings-button {
-            background: oklch(20% 0.03 140);
-            border: 1px solid oklch(25% 0.05 140);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
             border-radius: 8px;
             width: 40px;
             height: 40px;
@@ -129,52 +285,57 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 200ms ease;
+            transition: all var(--transition-standard) var(--ease);
             font-size: 18px;
         }
 
         .settings-button:hover {
-            background: oklch(25% 0.05 140);
-            border-color: #3EB85F;
+            border-color: var(--cbo-green-start);
+            transform: translateY(-2px);
         }
 
-        /* Token Input */
+        /* ==================== TOKEN INPUT ==================== */
         .token-input-section {
-            padding: 24px;
+            padding: var(--space-lg);
         }
 
         .input-label {
             font-size: 13px;
-            color: oklch(65% 0.03 140);
-            margin-bottom: 12px;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .token-input-container {
-            background: oklch(12% 0.02 140);
-            border: 2px solid oklch(20% 0.05 140);
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-subtle);
             border-radius: 16px;
-            padding: 20px;
-            transition: all 200ms ease;
+            padding: var(--space-lg);
+            transition: all var(--transition-standard) var(--ease);
         }
 
         .token-input-container:hover {
-            border-color: oklch(30% 0.08 140);
+            border-color: var(--border-medium);
         }
 
         .token-input-container.focused {
-            border-color: #3EB85F;
+            border-color: var(--cbo-green-start);
             box-shadow: 0 0 0 4px rgba(62, 184, 95, 0.1);
+        }
+
+        .token-input-container.error {
+            border-color: var(--alert-error);
+            box-shadow: 0 0 0 4px rgba(244, 67, 54, 0.1);
         }
 
         .token-input-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 16px;
-            margin-bottom: 12px;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
         }
 
         .amount-input {
@@ -182,39 +343,39 @@
             border: none;
             font-size: 32px;
             font-weight: 700;
-            color: oklch(98% 0.02 140);
+            color: var(--text-primary);
             outline: none;
             flex: 1;
             min-width: 0;
         }
 
         .amount-input::placeholder {
-            color: oklch(40% 0.02 140);
+            color: var(--text-muted);
         }
 
         .token-selector {
-            background: oklch(18% 0.03 140);
-            border: 1px solid oklch(25% 0.05 140);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
             border-radius: 12px;
-            padding: 12px 16px;
+            padding: 12px var(--space-md);
             display: flex;
             align-items: center;
             gap: 10px;
             cursor: pointer;
-            transition: all 200ms ease;
+            transition: all var(--transition-standard) var(--ease);
             min-width: 140px;
         }
 
         .token-selector:hover {
-            background: oklch(22% 0.04 140);
-            border-color: #3EB85F;
+            border-color: var(--cbo-green-start);
+            transform: translateY(-2px);
         }
 
         .token-icon {
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #3EB85F 0%, #5CD87F 100%);
+            background: linear-gradient(135deg, var(--cbo-green-start) 0%, var(--cbo-green-end) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -225,12 +386,12 @@
         .token-symbol {
             font-size: 16px;
             font-weight: 700;
-            color: oklch(95% 0.03 140);
+            color: var(--text-primary);
         }
 
         .token-chevron {
             font-size: 12px;
-            color: oklch(60% 0.03 140);
+            color: var(--text-muted);
         }
 
         .balance-row {
@@ -241,47 +402,66 @@
 
         .balance-label {
             font-size: 13px;
-            color: oklch(60% 0.03 140);
+            color: var(--text-secondary);
         }
 
         .balance-amount {
+            font-family: var(--font-mono);
             font-size: 13px;
             font-weight: 600;
-            color: oklch(75% 0.05 140);
+            color: var(--text-primary);
         }
 
         .max-button {
-            background: oklch(20% 0.03 140);
-            border: 1px solid oklch(25% 0.05 140);
-            color: #3EB85F;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            color: var(--cbo-green-start);
             font-size: 11px;
             font-weight: 700;
             padding: 4px 10px;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 200ms ease;
+            transition: all var(--transition-standard) var(--ease);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-left: var(--space-sm);
         }
 
         .max-button:hover {
             background: rgba(62, 184, 95, 0.1);
-            border-color: #3EB85F;
+            border-color: var(--cbo-green-start);
         }
 
-        /* Swap Direction */
+        /* Insufficient balance warning */
+        .balance-warning {
+            display: none;
+            margin-top: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--alert-error);
+        }
+
+        .balance-warning.show {
+            display: block;
+        }
+
+        /* ==================== SWAP DIRECTION ==================== */
         .swap-direction {
             display: flex;
             justify-content: center;
-            padding: 0 24px;
+            padding: 0 var(--space-lg);
             margin: -20px 0;
             position: relative;
             z-index: 10;
         }
 
         .swap-direction-button {
-            background: oklch(15% 0.02 140);
-            border: 3px solid oklch(12% 0.02 140);
+            background: var(--bg-secondary);
+            backdrop-filter: blur(12px);
+            border: 3px solid var(--bg-primary);
             border-radius: 12px;
             width: 48px;
             height: 48px;
@@ -289,21 +469,71 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 300ms ease;
+            transition: all var(--transition-slow) var(--ease);
             font-size: 20px;
         }
 
         .swap-direction-button:hover {
-            background: #3EB85F;
-            border-color: #3EB85F;
+            background: var(--cbo-green-start);
+            border-color: var(--cbo-green-start);
             transform: rotate(180deg);
         }
 
-        /* Quote Section */
+        /* ==================== PRICE IMPACT WARNING ==================== */
+        .price-impact-warning {
+            display: none;
+            margin: var(--space-lg);
+            margin-bottom: 0;
+            padding: var(--space-md);
+            border-radius: 12px;
+            font-size: 13px;
+            animation: slideDown 0.3s var(--ease);
+        }
+
+        .price-impact-warning.show {
+            display: block;
+        }
+
+        .price-impact-warning.medium {
+            background: rgba(251, 146, 60, 0.1);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            color: var(--alert-warning);
+        }
+
+        .price-impact-warning.high {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            color: var(--alert-error);
+        }
+
+        .warning-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .warning-message {
+            opacity: 0.9;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==================== QUOTE SECTION ==================== */
         .quote-section {
-            padding: 24px;
-            border-top: 1px solid oklch(20% 0.03 140);
-            background: oklch(12% 0.015 140);
+            padding: var(--space-lg);
+            border-top: 1px solid var(--border-subtle);
+            background: var(--bg-tertiary);
         }
 
         .quote-row {
@@ -315,52 +545,183 @@
 
         .quote-label {
             font-size: 14px;
-            color: oklch(65% 0.03 140);
+            color: var(--text-secondary);
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
         .quote-value {
+            font-family: var(--font-mono);
             font-size: 14px;
             font-weight: 600;
-            color: oklch(90% 0.03 140);
+            color: var(--text-primary);
         }
 
         .quote-value.highlight {
-            color: #3EB85F;
+            color: var(--cbo-green-start);
             font-size: 16px;
         }
 
         .info-tooltip {
             width: 16px;
             height: 16px;
-            background: oklch(20% 0.03 140);
+            background: var(--bg-secondary);
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             font-size: 10px;
             cursor: help;
-            color: oklch(60% 0.03 140);
+            color: var(--text-muted);
         }
 
-        /* Swap Button */
+        .copy-button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px var(--space-sm);
+            border-radius: 6px;
+            transition: all var(--transition-standard) var(--ease);
+            font-size: 12px;
+            margin-left: var(--space-sm);
+        }
+
+        .copy-button:hover {
+            background: rgba(62, 184, 95, 0.1);
+            color: var(--cbo-green-start);
+        }
+
+        .copy-button.copied {
+            color: var(--cbo-green-start);
+        }
+
+        /* ==================== ROUTE COMPARISON ==================== */
+        .routes-section {
+            padding: var(--space-lg);
+            border-top: 1px solid var(--border-subtle);
+            background: var(--bg-tertiary);
+        }
+
+        .routes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .routes-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .routes-toggle {
+            background: none;
+            border: none;
+            color: var(--cbo-green-start);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px var(--space-sm);
+            border-radius: 6px;
+            transition: all var(--transition-standard) var(--ease);
+        }
+
+        .routes-toggle:hover {
+            background: rgba(62, 184, 95, 0.1);
+        }
+
+        .route-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: var(--space-md);
+            margin-bottom: var(--space-sm);
+            cursor: pointer;
+            transition: all var(--transition-standard) var(--ease);
+        }
+
+        .route-card:hover {
+            border-color: var(--cbo-green-start);
+            transform: translateY(-2px);
+        }
+
+        .route-card.selected {
+            border-color: var(--cbo-green-start);
+            background: rgba(62, 184, 95, 0.05);
+        }
+
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .route-exchange {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .route-badge {
+            background: var(--cbo-green-start);
+            color: var(--bg-primary);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .route-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-sm);
+            font-size: 12px;
+        }
+
+        .route-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .route-stat-label {
+            color: var(--text-muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .route-stat-value {
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* ==================== SWAP BUTTON ==================== */
         .swap-button-container {
-            padding: 24px;
+            padding: var(--space-lg);
         }
 
         .swap-button {
             width: 100%;
-            padding: 20px;
-            background: linear-gradient(135deg, #3EB85F 0%, #5CD87F 100%);
-            color: oklch(10% 0 0);
+            padding: var(--space-lg);
+            background: linear-gradient(135deg, var(--cbo-green-start) 0%, var(--cbo-green-end) 100%);
+            color: var(--bg-primary);
             border: none;
             border-radius: 16px;
             font-size: 18px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 300ms ease;
+            transition: all var(--transition-slow) var(--ease);
         }
 
         .swap-button:hover:not(:disabled) {
@@ -374,11 +735,11 @@
         }
 
         .swap-button.loading {
-            background: oklch(20% 0.03 140);
-            color: oklch(70% 0.03 140);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
         }
 
-        /* Loading Spinner */
+        /* ==================== LOADING STATES ==================== */
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
@@ -387,111 +748,370 @@
             display: inline-block;
             width: 16px;
             height: 16px;
-            border: 2px solid oklch(30% 0.03 140);
-            border-top-color: #3EB85F;
+            border: 2px solid var(--border-subtle);
+            border-top-color: var(--cbo-green-start);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin-right: 8px;
+            margin-right: var(--space-sm);
         }
 
-        /* Stats Grid */
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .skeleton {
+            background: linear-gradient(
+                90deg,
+                var(--bg-tertiary) 0%,
+                rgba(62, 184, 95, 0.05) 50%,
+                var(--bg-tertiary) 100%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        .skeleton-text {
+            height: 16px;
+            margin-bottom: var(--space-sm);
+        }
+
+        .skeleton-value {
+            height: 20px;
+            width: 60%;
+        }
+
+        /* ==================== MODALS ==================== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 480px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-family: var(--font-display);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 28px;
+            cursor: pointer;
+            transition: color var(--transition-standard) var(--ease);
+            line-height: 1;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: var(--cbo-green-start);
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-lg);
+        }
+
+        /* ==================== SETTINGS MODAL ==================== */
+        .setting-row {
+            margin-bottom: var(--space-lg);
+        }
+
+        .setting-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            display: block;
+        }
+
+        .setting-description {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: var(--space-sm);
+        }
+
+        .setting-input {
+            width: 100%;
+            padding: 12px var(--space-md);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .setting-input:focus {
+            outline: none;
+            border-color: var(--cbo-green-start);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+
+        .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-subtle);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-muted);
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-input:checked + .toggle-slider {
+            background-color: var(--cbo-green-start);
+            border-color: var(--cbo-green-start);
+        }
+
+        .toggle-input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+            background-color: var(--text-primary);
+        }
+
+        /* ==================== TOKEN LIST ==================== */
+        .token-search-container {
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .token-search {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 14px var(--space-md);
+            font-size: 16px;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color var(--transition-standard) var(--ease);
+        }
+
+        .token-search:focus {
+            border-color: var(--cbo-green-start);
+        }
+
+        .token-search::placeholder {
+            color: var(--text-muted);
+        }
+
+        .token-list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-sm);
+        }
+
+        .token-list-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all var(--transition-standard) var(--ease);
+        }
+
+        .token-list-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .token-list-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+        }
+
+        .token-list-info {
+            flex: 1;
+        }
+
+        .token-list-symbol {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .token-list-name {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ==================== STATS GRID ==================== */
         .stats-section {
-            margin-top: 32px;
-            padding: 24px;
-            background: oklch(15% 0.02 140);
-            border: 2px solid oklch(20% 0.05 140);
+            margin-top: var(--space-xl);
+            padding: var(--space-lg);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
             border-radius: 20px;
         }
 
         .stats-title {
+            font-family: var(--font-display);
             font-size: 16px;
             font-weight: 700;
-            margin-bottom: 16px;
-            color: oklch(95% 0.03 140);
+            margin-bottom: var(--space-md);
+            color: var(--text-primary);
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 16px;
+            gap: var(--space-md);
         }
 
         .stat-item {
-            background: oklch(12% 0.015 140);
-            padding: 16px;
+            background: var(--bg-tertiary);
+            padding: var(--space-md);
             border-radius: 12px;
-            border: 1px solid oklch(20% 0.03 140);
+            border: 1px solid var(--border-subtle);
         }
 
         .stat-label {
             font-size: 12px;
-            color: oklch(60% 0.03 140);
+            color: var(--text-muted);
             margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .stat-value {
+            font-family: var(--font-mono);
             font-size: 20px;
             font-weight: 700;
-            color: #3EB85F;
+            color: var(--cbo-green-start);
         }
 
-        /* Footer */
+        /* ==================== FOOTER ==================== */
         footer {
-            background: oklch(12% 0.02 140);
-            border-top: 2px solid oklch(20% 0.05 140);
-            padding: 24px;
+            background: var(--bg-tertiary);
+            border-top: 2px solid var(--border-subtle);
+            padding: var(--space-lg);
             text-align: center;
         }
 
         .footer-links {
             display: flex;
             justify-content: center;
-            gap: 24px;
-            margin-bottom: 16px;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-md);
             flex-wrap: wrap;
         }
 
         .footer-link {
-            color: oklch(70% 0.03 140);
+            color: var(--text-secondary);
             text-decoration: none;
             font-size: 14px;
-            transition: color 200ms ease;
+            transition: color var(--transition-standard) var(--ease);
         }
 
         .footer-link:hover {
-            color: #3EB85F;
+            color: var(--cbo-green-start);
         }
 
         .footer-text {
             font-size: 13px;
-            color: oklch(55% 0.03 140);
+            color: var(--text-muted);
         }
 
         .powered-by {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: var(--space-sm);
             margin-top: 12px;
             font-size: 12px;
-            color: oklch(60% 0.03 140);
+            color: var(--text-muted);
         }
 
-        /* Notification Toast */
+        /* ==================== NOTIFICATION TOAST ==================== */
         .notification {
             position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: oklch(15% 0.02 140);
-            border: 2px solid #3EB85F;
+            bottom: var(--space-lg);
+            right: var(--space-lg);
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--cbo-green-start);
             border-radius: 16px;
-            padding: 16px 24px;
+            padding: var(--space-md) var(--space-lg);
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
             transform: translateY(120%);
-            transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
+            transition: transform 400ms var(--ease);
+            z-index: 3000;
             max-width: 400px;
         }
 
@@ -500,7 +1120,7 @@
         }
 
         .notification.error {
-            border-color: #f44336;
+            border-color: var(--alert-error);
         }
 
         .notification-content {
@@ -516,142 +1136,13 @@
         .notification-text {
             flex: 1;
             font-size: 14px;
-            color: oklch(90% 0.03 140);
+            color: var(--text-primary);
         }
 
-        /* Token Modal */
-        .token-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .token-modal-content {
-            background: oklch(15% 0.02 140);
-            border: 2px solid oklch(20% 0.05 140);
-            border-radius: 24px;
-            width: 100%;
-            max-width: 480px;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
-        }
-
-        .token-modal-header {
-            padding: 24px;
-            border-bottom: 1px solid oklch(20% 0.03 140);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .token-modal-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: oklch(95% 0.03 140);
-        }
-
-        .token-modal-close {
-            background: none;
-            border: none;
-            color: oklch(70% 0.03 140);
-            font-size: 28px;
-            cursor: pointer;
-            transition: color 200ms ease;
-            line-height: 1;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .token-modal-close:hover {
-            color: #3EB85F;
-        }
-
-        .token-search-container {
-            padding: 16px 24px;
-            border-bottom: 1px solid oklch(20% 0.03 140);
-        }
-
-        .token-search {
-            width: 100%;
-            background: oklch(12% 0.02 140);
-            border: 2px solid oklch(20% 0.05 140);
-            border-radius: 12px;
-            padding: 14px 16px;
-            font-size: 16px;
-            color: oklch(95% 0.03 140);
-            outline: none;
-            transition: border-color 200ms ease;
-        }
-
-        .token-search:focus {
-            border-color: #3EB85F;
-        }
-
-        .token-search::placeholder {
-            color: oklch(50% 0.02 140);
-        }
-
-        .token-list-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 8px;
-        }
-
-        .token-list-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 200ms ease;
-        }
-
-        .token-list-item:hover {
-            background: oklch(18% 0.03 140);
-        }
-
-        .token-list-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: oklch(20% 0.03 140);
-        }
-
-        .token-list-info {
-            flex: 1;
-        }
-
-        .token-list-symbol {
-            font-size: 16px;
-            font-weight: 700;
-            color: oklch(95% 0.03 140);
-        }
-
-        .token-list-name {
-            font-size: 13px;
-            color: oklch(60% 0.03 140);
-            margin-top: 2px;
-        }
-
-        /* Responsive */
+        /* ==================== RESPONSIVE ==================== */
         @media (max-width: 768px) {
             header {
-                padding: 16px 24px;
+                padding: var(--space-md) var(--space-lg);
             }
 
             .logo {
@@ -659,7 +1150,7 @@
             }
 
             main {
-                padding: 24px 16px;
+                padding: var(--space-lg) var(--space-md);
             }
 
             .amount-input {
@@ -670,9 +1161,25 @@
                 grid-template-columns: 1fr 1fr;
             }
 
-            .token-modal-content {
+            .modal-content {
                 max-height: 90vh;
             }
+        }
+
+        /* ==================== ACCESSIBILITY ==================== */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--cbo-green-start);
+            outline-offset: 2px;
         }
     </style>
 </head>
@@ -680,7 +1187,7 @@
     <header>
         <div class="logo-section">
             <h1 class="logo">💪 BroFit Swap</h1>
-            <span class="beta-badge">NATIVE</span>
+            <span class="beta-badge">Premium</span>
         </div>
         <button class="wallet-connect" id="walletButton" onclick="connectWallet()">
             🔌 Connect Wallet
@@ -688,11 +1195,25 @@
     </header>
 
     <main>
+        <!-- Slippage Control -->
+        <div class="slippage-control">
+            <div class="slippage-header">
+                <span class="slippage-label">Slippage Tolerance</span>
+                <span class="slippage-value" id="slippageDisplay">1.0%</span>
+            </div>
+            <div class="slippage-buttons">
+                <button class="slippage-button" onclick="setSlippage(0.5)">0.5%</button>
+                <button class="slippage-button active" onclick="setSlippage(1.0)">1.0%</button>
+                <button class="slippage-button" onclick="setSlippage(3.0)">3.0%</button>
+                <input type="number" class="custom-slippage" id="customSlippage" placeholder="Custom" step="0.1" min="0.1" max="50" onchange="setCustomSlippage()">
+            </div>
+        </div>
+
         <!-- Swap Card -->
         <div class="swap-card">
             <div class="swap-header">
                 <h2 class="swap-title">Swap</h2>
-                <button class="settings-button" onclick="showSettings()">⚙️</button>
+                <button class="settings-button" onclick="openSettings()" aria-label="Settings">⚙️</button>
             </div>
 
             <!-- From Token -->
@@ -708,23 +1229,27 @@
                             oninput="handleAmountChange()"
                             onfocus="document.getElementById('fromContainer').classList.add('focused')"
                             onblur="document.getElementById('fromContainer').classList.remove('focused')"
+                            aria-label="Amount to swap"
                         >
                         <div class="token-selector" onclick="selectToken('from')">
                             <div class="token-icon" id="fromIcon">ETH</div>
                             <span class="token-symbol" id="fromSymbol">ETH</span>
-                            <span class="token-chevron">▼</span>
+                            <span class="token-chevron" aria-hidden="true">▼</span>
                         </div>
                     </div>
                     <div class="balance-row">
                         <span class="balance-label">Balance: <span class="balance-amount" id="fromBalance">0.00</span></span>
                         <button class="max-button" onclick="setMaxAmount()">MAX</button>
                     </div>
+                    <div class="balance-warning" id="balanceWarning">
+                        ⚠️ Insufficient balance for this swap
+                    </div>
                 </div>
             </div>
 
             <!-- Swap Direction -->
             <div class="swap-direction">
-                <button class="swap-direction-button" onclick="swapDirection()">🔄</button>
+                <button class="swap-direction-button" onclick="swapDirection()" aria-label="Reverse swap direction">🔄</button>
             </div>
 
             <!-- To Token -->
@@ -739,16 +1264,28 @@
                             placeholder="0.0"
                             readonly
                             style="cursor: default;"
+                            aria-label="Amount to receive"
                         >
                         <div class="token-selector" onclick="selectToken('to')">
                             <div class="token-icon" id="toIcon">USDC</div>
                             <span class="token-symbol" id="toSymbol">USDC</span>
-                            <span class="token-chevron">▼</span>
+                            <span class="token-chevron" aria-hidden="true">▼</span>
                         </div>
                     </div>
                     <div class="balance-row">
                         <span class="balance-label">Balance: <span class="balance-amount" id="toBalance">0.00</span></span>
                     </div>
+                </div>
+            </div>
+
+            <!-- Price Impact Warning -->
+            <div class="price-impact-warning" id="priceImpactWarning">
+                <div class="warning-title">
+                    <span>⚠️</span>
+                    <span id="warningTitle">High Price Impact</span>
+                </div>
+                <div class="warning-message" id="warningMessage">
+                    This trade will significantly affect the market price. Consider reducing your swap amount.
                 </div>
             </div>
 
@@ -761,24 +1298,40 @@
                 <div class="quote-row">
                     <span class="quote-label">
                         Price Impact
-                        <span class="info-tooltip">i</span>
+                        <span class="info-tooltip" title="How much your trade affects the market price">i</span>
                     </span>
                     <span class="quote-value" id="priceImpact">< 0.01%</span>
                 </div>
                 <div class="quote-row">
                     <span class="quote-label">
                         Network Fee
-                        <span class="info-tooltip">i</span>
+                        <span class="info-tooltip" title="Estimated gas cost in USD">i</span>
                     </span>
                     <span class="quote-value" id="networkFee">~$5.23</span>
                 </div>
                 <div class="quote-row">
                     <span class="quote-label">
                         Minimum Received
-                        <span class="info-tooltip">i</span>
+                        <span class="info-tooltip" title="Minimum amount after slippage">i</span>
                     </span>
                     <span class="quote-value highlight" id="minReceived">2,487.50 USDC</span>
                 </div>
+                <div class="quote-row">
+                    <span class="quote-label">Exchange</span>
+                    <span class="quote-value" id="exchangeName">VELORA</span>
+                </div>
+            </div>
+
+            <!-- Route Comparison -->
+            <div class="routes-section" id="routesSection" style="display: none;">
+                <div class="routes-header">
+                    <span class="routes-title" id="routesTitle">📊 Best of 12 Routes</span>
+                    <button class="routes-toggle" id="routesToggle" onclick="toggleRoutes()">
+                        <span id="routesToggleText">Show All</span>
+                        <span id="routesToggleIcon">▼</span>
+                    </button>
+                </div>
+                <div id="routesList"></div>
             </div>
 
             <!-- Swap Button -->
@@ -818,17 +1371,17 @@
             <a href="#" class="footer-link">Documentation</a>
             <a href="#" class="footer-link">Support</a>
             <a href="#" class="footer-link">Terms</a>
-            <a href="index.html" class="footer-link">← Gallery</a>
+            <a href="gallery.html" class="footer-link">← Gallery</a>
         </div>
-        <p class="footer-text">Built with BroFit green branding 💪</p>
+        <p class="footer-text">Built with BroHub Design System v1.0 💪</p>
         <div class="powered-by">
             <span>Powered by</span>
-            <span style="color: #3EB85F; font-weight: 700;">RocketX API</span>
+            <span style="color: var(--cbo-green-start); font-weight: 700;">RocketX API</span>
         </div>
     </footer>
 
     <!-- Notification Toast -->
-    <div class="notification" id="notification">
+    <div class="notification" id="notification" role="alert" aria-live="polite">
         <div class="notification-content">
             <span class="notification-icon" id="notificationIcon">✓</span>
             <span class="notification-text" id="notificationText"></span>
@@ -836,11 +1389,11 @@
     </div>
 
     <!-- Token Selector Modal -->
-    <div class="token-modal" id="tokenModal" onclick="if(event.target === this) closeTokenModal()">
-        <div class="token-modal-content">
-            <div class="token-modal-header">
-                <h3 class="token-modal-title">Select Token</h3>
-                <button class="token-modal-close" onclick="closeTokenModal()">×</button>
+    <div class="modal" id="tokenModal" onclick="if(event.target === this) closeTokenModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Select Token</h3>
+                <button class="modal-close" onclick="closeTokenModal()" aria-label="Close modal">×</button>
             </div>
             <div class="token-search-container">
                 <input
@@ -849,7 +1402,7 @@
                     id="tokenSearch"
                     placeholder="Search by name, symbol or address..."
                     oninput="searchTokens()"
-                    autofocus
+                    aria-label="Search tokens"
                 >
             </div>
             <div class="token-list-container" id="tokenList">
@@ -858,24 +1411,124 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal" onclick="if(event.target === this) closeSettings()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">⚙️ Settings</h3>
+                <button class="modal-close" onclick="closeSettings()" aria-label="Close settings">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-row">
+                    <label class="setting-label">Default Slippage Tolerance</label>
+                    <p class="setting-description">Your default slippage tolerance percentage</p>
+                    <input type="number" class="setting-input" id="defaultSlippage" value="1.0" step="0.1" min="0.1" max="50">
+                </div>
+                <div class="setting-row">
+                    <label class="setting-label">Auto-Refresh Quotes</label>
+                    <p class="setting-description">Automatically refresh quotes every 30 seconds</p>
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-input" id="autoRefresh" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-label">Show All Routes by Default</label>
+                    <p class="setting-description">Expand route comparison automatically</p>
+                    <label class="toggle-switch">
+                        <input type="checkbox" class="toggle-input" id="showAllRoutes">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <label class="setting-label">Transaction Deadline</label>
+                    <p class="setting-description">Minutes before transaction expires</p>
+                    <input type="number" class="setting-input" id="txDeadline" value="20" min="1" max="60">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // RocketX API Configuration
+        // ==================== CONFIGURATION ====================
         const API_KEY = '25de7b8a-5dbd-41d5-a9a5-e865462268a0';
         const REF_CODE = 'lVf8AK55';
         const API_BASE_URL = 'https://api.rocketx.exchange';
 
-        // State Management
+        // ==================== STATE MANAGEMENT ====================
         let walletConnected = false;
         let walletAddress = '';
-        let fromToken = { symbol: 'ETH', address: 'native', decimals: 18, network: 'ethereum', logo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png' };
-        let toToken = { symbol: 'USDC', address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals: 6, network: 'ethereum', logo: 'https://assets.coingecko.com/coins/images/6319/small/USD_Coin_icon.png' };
+        let fromToken = {
+            symbol: 'ETH',
+            address: 'native',
+            decimals: 18,
+            network: 'ethereum',
+            logo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png'
+        };
+        let toToken = {
+            symbol: 'USDC',
+            address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+            decimals: 6,
+            network: 'ethereum',
+            logo: 'https://assets.coingecko.com/coins/images/6319/small/USD_Coin_icon.png'
+        };
         let quoteData = null;
         let quoteTimeout = null;
+        let autoRefreshInterval = null;
         let tokenList = [];
         let filteredTokens = [];
-        let currentTokenSelector = null; // 'from' or 'to'
+        let currentTokenSelector = null;
+        let slippageTolerance = 1.0;
+        let showAllRoutes = false;
 
-        // Wallet Connection
+        // ==================== SLIPPAGE CONTROL ====================
+        function setSlippage(value) {
+            slippageTolerance = value;
+            document.getElementById('slippageDisplay').textContent = `${value}%`;
+            document.getElementById('customSlippage').value = '';
+
+            // Update active button
+            document.querySelectorAll('.slippage-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Re-fetch quote with new slippage
+            if (quoteData) {
+                const amount = document.getElementById('fromAmount').value;
+                if (amount && parseFloat(amount) > 0) {
+                    fetchQuote(amount);
+                }
+            }
+
+            // Save to localStorage
+            localStorage.setItem('brofit_slippage', value);
+        }
+
+        function setCustomSlippage() {
+            const value = parseFloat(document.getElementById('customSlippage').value);
+            if (value && value > 0 && value <= 50) {
+                slippageTolerance = value;
+                document.getElementById('slippageDisplay').textContent = `${value}%`;
+
+                // Remove active class from preset buttons
+                document.querySelectorAll('.slippage-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // Re-fetch quote
+                if (quoteData) {
+                    const amount = document.getElementById('fromAmount').value;
+                    if (amount && parseFloat(amount) > 0) {
+                        fetchQuote(amount);
+                    }
+                }
+
+                localStorage.setItem('brofit_slippage', value);
+            }
+        }
+
+        // ==================== WALLET CONNECTION ====================
         async function connectWallet() {
             if (typeof window.ethereum === 'undefined') {
                 showNotification('Please install MetaMask to use this feature', 'error');
@@ -899,17 +1552,12 @@
             }
         }
 
-        // Fetch Token List
+        // ==================== TOKEN LIST ====================
         async function fetchTokenList() {
             try {
-                const response = await fetch(
-                    `${API_BASE_URL}/v1/tokens`,
-                    {
-                        headers: {
-                            'X-API-KEY': API_KEY
-                        }
-                    }
-                );
+                const response = await fetch(`${API_BASE_URL}/v1/tokens`, {
+                    headers: { 'X-API-KEY': API_KEY }
+                });
 
                 if (!response.ok) {
                     throw new Error(`Token list fetch failed: ${response.status}`);
@@ -918,7 +1566,6 @@
                 const data = await response.json();
                 console.log('Token list fetched:', data);
 
-                // Parse and store token list (filter for Ethereum network)
                 if (data && Array.isArray(data)) {
                     tokenList = data
                         .filter(token => token.network_id === 'ethereum')
@@ -937,18 +1584,17 @@
                 }
             } catch (error) {
                 console.error('Token list fetch error:', error);
-                // Use default tokens if fetch fails
                 tokenList = [fromToken, toToken];
                 filteredTokens = tokenList;
             }
         }
 
-        // Update Balances
+        // ==================== BALANCE MANAGEMENT ====================
         async function updateBalances() {
             if (!walletConnected) return;
 
             try {
-                // Get ETH balance (native token)
+                // From token balance
                 if (fromToken.address === 'native') {
                     const ethBalance = await window.ethereum.request({
                         method: 'eth_getBalance',
@@ -957,12 +1603,11 @@
                     const ethBalanceFormatted = (parseInt(ethBalance, 16) / 1e18).toFixed(4);
                     document.getElementById('fromBalance').textContent = ethBalanceFormatted;
                 } else {
-                    // Fetch ERC20 balance
                     const balance = await getERC20Balance(fromToken.address, walletAddress);
                     document.getElementById('fromBalance').textContent = balance;
                 }
 
-                // Fetch toToken balance
+                // To token balance
                 if (toToken.address === 'native') {
                     const ethBalance = await window.ethereum.request({
                         method: 'eth_getBalance',
@@ -974,15 +1619,16 @@
                     const balance = await getERC20Balance(toToken.address, walletAddress);
                     document.getElementById('toBalance').textContent = balance;
                 }
+
+                // Validate balance
+                validateBalance();
             } catch (error) {
                 console.error('Balance fetch error:', error);
             }
         }
 
-        // Get ERC20 Token Balance
         async function getERC20Balance(tokenAddress, walletAddress) {
             try {
-                // ERC20 balanceOf function signature
                 const data = '0x70a08231' + walletAddress.slice(2).padStart(64, '0');
 
                 const balance = await window.ethereum.request({
@@ -993,7 +1639,6 @@
                     }, 'latest']
                 });
 
-                // Find token to get decimals
                 const token = tokenList.find(t => t.address.toLowerCase() === tokenAddress.toLowerCase()) || toToken;
                 const balanceFormatted = (parseInt(balance, 16) / Math.pow(10, token.decimals)).toFixed(4);
                 return balanceFormatted;
@@ -1003,18 +1648,36 @@
             }
         }
 
-        // Handle Amount Change
+        function validateBalance() {
+            const amount = parseFloat(document.getElementById('fromAmount').value);
+            const balance = parseFloat(document.getElementById('fromBalance').textContent);
+            const container = document.getElementById('fromContainer');
+            const warning = document.getElementById('balanceWarning');
+
+            if (amount > 0 && balance > 0 && amount > balance) {
+                container.classList.add('error');
+                warning.classList.add('show');
+                return false;
+            } else {
+                container.classList.remove('error');
+                warning.classList.remove('show');
+                return true;
+            }
+        }
+
+        // ==================== QUOTE MANAGEMENT ====================
         function handleAmountChange() {
             const amount = document.getElementById('fromAmount').value;
 
             if (!amount || parseFloat(amount) <= 0) {
                 document.getElementById('swapButton').textContent = 'Enter Amount';
                 document.getElementById('quoteSection').style.display = 'none';
+                document.getElementById('routesSection').style.display = 'none';
                 return;
             }
 
-            // Fetch quote even without wallet (quotes don't need wallet, only swaps do)
-            // Debounce quote fetching
+            validateBalance();
+
             clearTimeout(quoteTimeout);
             quoteTimeout = setTimeout(() => {
                 fetchQuote(amount);
@@ -1023,19 +1686,24 @@
             document.getElementById('swapButton').textContent = 'Fetching Quote...';
         }
 
-        // Fetch Quote from RocketX API
         async function fetchQuote(amount) {
             try {
                 const response = await fetchRocketXQuote(amount);
 
                 quoteData = response;
                 displayQuote(response);
+                checkPriceImpact(response.priceImpact);
+                displayRoutes(response.allQuotes);
 
-                // Set button text based on wallet connection
-                if (walletConnected) {
-                    document.getElementById('swapButton').textContent = `Swap ${fromToken.symbol} → ${toToken.symbol}`;
-                } else {
+                // Set button text based on wallet connection and balance
+                if (!walletConnected) {
                     document.getElementById('swapButton').textContent = 'Connect Wallet to Swap';
+                } else if (!validateBalance()) {
+                    document.getElementById('swapButton').textContent = 'Insufficient Balance';
+                    document.getElementById('swapButton').disabled = true;
+                } else {
+                    document.getElementById('swapButton').textContent = `Swap ${fromToken.symbol} → ${toToken.symbol}`;
+                    document.getElementById('swapButton').disabled = false;
                 }
             } catch (error) {
                 console.error('Quote fetch error:', error);
@@ -1044,7 +1712,6 @@
             }
         }
 
-        // Fetch Real Quote from RocketX API
         async function fetchRocketXQuote(amount) {
             const params = new URLSearchParams({
                 fromToken: fromToken.address === 'native' ? 'undefined' : fromToken.address,
@@ -1052,22 +1719,17 @@
                 toToken: toToken.address === 'native' ? 'undefined' : toToken.address,
                 toNetwork: toToken.network.toLowerCase(),
                 amount: amount.toString(),
-                slippage: '1', // 1% slippage
+                slippage: slippageTolerance.toString(),
                 referralId: REF_CODE,
                 walletLess: 'false'
             });
 
             console.log('Fetching RocketX quote:', params.toString());
 
-            const response = await fetch(
-                `${API_BASE_URL}/v1/quotation?${params}`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'X-API-KEY': API_KEY
-                    }
-                }
-            );
+            const response = await fetch(`${API_BASE_URL}/v1/quotation?${params}`, {
+                method: 'GET',
+                headers: { 'X-API-KEY': API_KEY }
+            });
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -1078,12 +1740,10 @@
             const data = await response.json();
             console.log('RocketX Quote Response:', data);
 
-            // Parse RocketX response format
             if (!data.quotes || data.quotes.length === 0) {
                 throw new Error('No quotes available for this swap');
             }
 
-            // Get best quote (first in array is typically best)
             const bestQuote = data.quotes[0];
 
             return {
@@ -1100,41 +1760,162 @@
             };
         }
 
-        // Display Quote
         function displayQuote(quote) {
             document.getElementById('toAmount').value = quote.outputAmount;
 
-            // Format rate with proper decimals
             const formattedRate = parseFloat(quote.rate).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
             document.getElementById('quoteRate').textContent = `1 ${fromToken.symbol} = ${formattedRate} ${toToken.symbol}`;
 
-            // Format price impact
             const priceImpactFormatted = quote.priceImpact < 0.01 ? '< 0.01' : quote.priceImpact.toFixed(2);
             document.getElementById('priceImpact').textContent = `${priceImpactFormatted}%`;
 
-            // Format network fee
             const networkFeeFormatted = quote.networkFee ? `~$${quote.networkFee.toFixed(2)}` : 'Calculating...';
             document.getElementById('networkFee').textContent = networkFeeFormatted;
 
-            // Format minimum received
             const minReceivedFormatted = parseFloat(quote.minReceived).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
             document.getElementById('minReceived').textContent = `${minReceivedFormatted} ${toToken.symbol}`;
 
+            document.getElementById('exchangeName').textContent = quote.exchange;
+
             document.getElementById('quoteSection').style.display = 'block';
 
-            // Log exchange info for transparency
             if (quote.exchange) {
                 console.log(`Best route via: ${quote.exchange}`);
             }
         }
 
-        // Execute Swap
+        // ==================== PRICE IMPACT WARNING ====================
+        function checkPriceImpact(priceImpact) {
+            const warning = document.getElementById('priceImpactWarning');
+            const title = document.getElementById('warningTitle');
+            const message = document.getElementById('warningMessage');
+
+            if (priceImpact >= 10) {
+                // High impact (red)
+                warning.className = 'price-impact-warning high show';
+                title.textContent = `⚠️ Very High Price Impact: ${priceImpact.toFixed(2)}%`;
+                message.textContent = 'This trade will severely impact the market price. Consider breaking it into smaller swaps or choosing a different route.';
+            } else if (priceImpact >= 5) {
+                // Medium impact (orange)
+                warning.className = 'price-impact-warning high show';
+                title.textContent = `⚠️ High Price Impact: ${priceImpact.toFixed(2)}%`;
+                message.textContent = 'This trade will significantly affect the market price. Consider reducing your swap amount or checking alternative routes.';
+            } else if (priceImpact >= 3) {
+                // Low-medium impact (yellow)
+                warning.className = 'price-impact-warning medium show';
+                title.textContent = `⚠️ Moderate Price Impact: ${priceImpact.toFixed(2)}%`;
+                message.textContent = 'This trade may affect the market price. Review the quote carefully before proceeding.';
+            } else {
+                // Low impact - hide warning
+                warning.classList.remove('show');
+            }
+        }
+
+        // ==================== ROUTE COMPARISON ====================
+        function displayRoutes(quotes) {
+            if (!quotes || quotes.length === 0) return;
+
+            document.getElementById('routesTitle').textContent = `📊 Best of ${quotes.length} Routes`;
+            document.getElementById('routesSection').style.display = 'block';
+
+            const routesList = document.getElementById('routesList');
+            routesList.innerHTML = '';
+
+            // Show top 3 routes by default (or all if setting is enabled)
+            const routesToShow = showAllRoutes ? quotes : quotes.slice(0, 3);
+
+            routesToShow.forEach((quote, index) => {
+                const routeCard = document.createElement('div');
+                routeCard.className = 'route-card' + (index === 0 ? ' selected' : '');
+                routeCard.onclick = () => selectRoute(index);
+
+                const exchangeName = quote.exchangeInfo?.title || 'Unknown';
+                const outputAmount = parseFloat(quote.toAmount).toFixed(4);
+                const gasFee = quote.gasFeeUsd ? `$${parseFloat(quote.gasFeeUsd).toFixed(2)}` : 'N/A';
+                const priceImpact = quote.additionalInfo?.priceImpact ? `${parseFloat(quote.additionalInfo.priceImpact).toFixed(2)}%` : 'N/A';
+
+                routeCard.innerHTML = `
+                    <div class="route-header">
+                        <span class="route-exchange">${exchangeName}</span>
+                        ${index === 0 ? '<span class="route-badge">Best</span>' : ''}
+                    </div>
+                    <div class="route-stats">
+                        <div class="route-stat">
+                            <div class="route-stat-label">You Get</div>
+                            <div class="route-stat-value">${outputAmount} ${toToken.symbol}</div>
+                        </div>
+                        <div class="route-stat">
+                            <div class="route-stat-label">Gas</div>
+                            <div class="route-stat-value">${gasFee}</div>
+                        </div>
+                        <div class="route-stat">
+                            <div class="route-stat-label">Impact</div>
+                            <div class="route-stat-value">${priceImpact}</div>
+                        </div>
+                    </div>
+                `;
+
+                routesList.appendChild(routeCard);
+            });
+        }
+
+        function toggleRoutes() {
+            showAllRoutes = !showAllRoutes;
+            const toggleText = document.getElementById('routesToggleText');
+            const toggleIcon = document.getElementById('routesToggleIcon');
+
+            if (showAllRoutes) {
+                toggleText.textContent = 'Show Less';
+                toggleIcon.textContent = '▲';
+            } else {
+                toggleText.textContent = 'Show All';
+                toggleIcon.textContent = '▼';
+            }
+
+            if (quoteData && quoteData.allQuotes) {
+                displayRoutes(quoteData.allQuotes);
+            }
+        }
+
+        function selectRoute(index) {
+            // Update selected route styling
+            document.querySelectorAll('.route-card').forEach((card, i) => {
+                if (i === index) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+
+            // Update quote data to use selected route
+            if (quoteData && quoteData.allQuotes && quoteData.allQuotes[index]) {
+                const selectedQuote = quoteData.allQuotes[index];
+                quoteData.rawResponse.quotes[0] = selectedQuote;
+
+                // Update displayed quote info
+                displayQuote({
+                    inputAmount: quoteData.inputAmount,
+                    outputAmount: selectedQuote.toAmount,
+                    rate: parseFloat(selectedQuote.toAmount) / parseFloat(quoteData.inputAmount),
+                    priceImpact: parseFloat(selectedQuote.additionalInfo?.priceImpact || 0),
+                    networkFee: parseFloat(selectedQuote.gasFeeUsd || 0),
+                    minReceived: selectedQuote.additionalInfo?.minRecieved || selectedQuote.toAmount,
+                    exchange: selectedQuote.exchangeInfo?.title || 'Unknown',
+                    allQuotes: quoteData.allQuotes,
+                    rawResponse: quoteData.rawResponse
+                });
+
+                checkPriceImpact(parseFloat(selectedQuote.additionalInfo?.priceImpact || 0));
+            }
+        }
+
+        // ==================== SWAP EXECUTION ====================
         async function executeSwap() {
             if (!walletConnected) {
                 connectWallet();
@@ -1144,6 +1925,11 @@
             const amount = document.getElementById('fromAmount').value;
             if (!amount || parseFloat(amount) <= 0) {
                 showNotification('Please enter an amount', 'error');
+                return;
+            }
+
+            if (!validateBalance()) {
+                showNotification('Insufficient balance', 'error');
                 return;
             }
 
@@ -1162,7 +1948,6 @@
                     button.innerHTML = '<span class="spinner"></span>Checking Allowance...';
                     const needsApproval = await checkAndRequestApproval();
                     if (needsApproval === null) {
-                        // User rejected approval
                         throw new Error('Approval rejected');
                     }
                 }
@@ -1173,10 +1958,14 @@
 
                 showNotification(`Swap successful! 🎉 Tx: ${result.txHash.slice(0, 10)}...`, 'success');
 
+                // Save to transaction history
+                saveTxHistory(result.txHash, amount);
+
                 // Reset form
                 document.getElementById('fromAmount').value = '';
                 document.getElementById('toAmount').value = '';
                 document.getElementById('quoteSection').style.display = 'none';
+                document.getElementById('routesSection').style.display = 'none';
                 document.getElementById('swapButton').textContent = 'Enter Amount';
 
                 // Wait a moment then update balances
@@ -1188,15 +1977,12 @@
             } finally {
                 button.classList.remove('loading');
                 button.disabled = false;
-                if (button.textContent === 'Enter Amount') {
-                    // Already set above
-                } else {
+                if (!button.textContent || button.textContent.includes('Checking') || button.textContent.includes('Executing')) {
                     button.textContent = 'Enter Amount';
                 }
             }
         }
 
-        // Check and Request ERC20 Approval
         async function checkAndRequestApproval() {
             try {
                 const spenderAddress = quoteData.rawResponse.quotes[0].allowanceAddress || '0x6a000f20005980200259b80c5102003040001068';
@@ -1229,7 +2015,7 @@
 
                 const approveData = '0x095ea7b3' +
                     spenderAddress.slice(2).padStart(64, '0') +
-                    'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'; // Max approval
+                    'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
 
                 const txHash = await window.ethereum.request({
                     method: 'eth_sendTransaction',
@@ -1241,30 +2027,22 @@
                 });
 
                 showNotification('Approval pending... Waiting for confirmation', 'success');
-
-                // Wait for approval transaction to be mined
                 await waitForTransaction(txHash);
-
                 showNotification('Approval confirmed! Proceeding with swap...', 'success');
                 return true;
             } catch (error) {
                 console.error('Approval error:', error);
                 if (error.code === 4001) {
-                    return null; // User rejected
+                    return null;
                 }
                 throw new Error('Failed to approve token: ' + error.message);
             }
         }
 
-        // Execute RocketX Swap
         async function executeRocketXSwap() {
             try {
                 const bestQuote = quoteData.rawResponse.quotes[0];
                 const amountWei = (parseFloat(document.getElementById('fromAmount').value) * Math.pow(10, fromToken.decimals)).toFixed(0);
-
-                // For DEX swaps, we need to get transaction data from RocketX
-                // Note: The actual swap endpoint may require additional parameters
-                // This is a simplified version based on available documentation
 
                 const txData = {
                     from: walletAddress,
@@ -1282,8 +2060,6 @@
                 });
 
                 showNotification('Transaction submitted! Waiting for confirmation...', 'success');
-
-                // Wait for transaction to be mined
                 await waitForTransaction(txHash);
 
                 return { success: true, txHash };
@@ -1296,10 +2072,9 @@
             }
         }
 
-        // Wait for Transaction Confirmation
         async function waitForTransaction(txHash) {
             let attempts = 0;
-            const maxAttempts = 60; // 60 seconds timeout
+            const maxAttempts = 60;
 
             while (attempts < maxAttempts) {
                 try {
@@ -1310,7 +2085,7 @@
 
                     if (receipt && receipt.blockNumber) {
                         if (receipt.status === '0x1') {
-                            return receipt; // Success
+                            return receipt;
                         } else {
                             throw new Error('Transaction failed');
                         }
@@ -1326,26 +2101,28 @@
             throw new Error('Transaction confirmation timeout');
         }
 
-        // Swap Direction
+        // ==================== TOKEN SELECTION ====================
         function swapDirection() {
             const temp = fromToken;
             fromToken = toToken;
             toToken = temp;
 
-            // Update UI
             document.getElementById('fromSymbol').textContent = fromToken.symbol;
             document.getElementById('toSymbol').textContent = toToken.symbol;
-            document.getElementById('fromIcon').textContent = fromToken.symbol.slice(0, 3);
-            document.getElementById('toIcon').textContent = toToken.symbol.slice(0, 3);
+            document.getElementById('fromIcon').innerHTML = `<img src="${fromToken.logo}" alt="${fromToken.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${fromToken.symbol.slice(0,3)}'">`;
+            document.getElementById('toIcon').innerHTML = `<img src="${toToken.logo}" alt="${toToken.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${toToken.symbol.slice(0,3)}'">`;
 
-            // Reset amounts
             document.getElementById('fromAmount').value = '';
             document.getElementById('toAmount').value = '';
             document.getElementById('quoteSection').style.display = 'none';
+            document.getElementById('routesSection').style.display = 'none';
             document.getElementById('swapButton').textContent = 'Enter Amount';
+
+            if (walletConnected) {
+                updateBalances();
+            }
         }
 
-        // Set Max Amount
         function setMaxAmount() {
             if (!walletConnected) {
                 showNotification('Please connect wallet first', 'error');
@@ -1357,23 +2134,20 @@
             handleAmountChange();
         }
 
-        // Token Selection
         function selectToken(direction) {
             currentTokenSelector = direction;
             const modal = document.getElementById('tokenModal');
-            modal.style.display = 'flex';
+            modal.classList.add('show');
             document.getElementById('tokenSearch').value = '';
             filteredTokens = tokenList;
             renderTokenList();
         }
 
-        // Close Token Modal
         function closeTokenModal() {
-            document.getElementById('tokenModal').style.display = 'none';
+            document.getElementById('tokenModal').classList.remove('show');
             currentTokenSelector = null;
         }
 
-        // Search Tokens
         function searchTokens() {
             const searchTerm = document.getElementById('tokenSearch').value.toLowerCase();
             filteredTokens = tokenList.filter(token =>
@@ -1384,13 +2158,12 @@
             renderTokenList();
         }
 
-        // Render Token List
         function renderTokenList() {
             const container = document.getElementById('tokenList');
             container.innerHTML = '';
 
             if (filteredTokens.length === 0) {
-                container.innerHTML = '<div style="padding: 40px; text-align: center; color: oklch(60% 0.03 140);">No tokens found</div>';
+                container.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-muted);">No tokens found</div>';
                 return;
             }
 
@@ -1411,7 +2184,6 @@
             });
         }
 
-        // Choose Token
         function chooseToken(token) {
             if (currentTokenSelector === 'from') {
                 fromToken = token;
@@ -1423,13 +2195,12 @@
                 document.getElementById('toIcon').innerHTML = `<img src="${token.logo}" alt="${token.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${token.symbol.slice(0,3)}'">`;
             }
 
-            // Reset amounts and quote
             document.getElementById('fromAmount').value = '';
             document.getElementById('toAmount').value = '';
             document.getElementById('quoteSection').style.display = 'none';
+            document.getElementById('routesSection').style.display = 'none';
             document.getElementById('swapButton').textContent = 'Enter Amount';
 
-            // Update balances if wallet connected
             if (walletConnected) {
                 updateBalances();
             }
@@ -1437,12 +2208,85 @@
             closeTokenModal();
         }
 
-        // Settings (Placeholder)
-        function showSettings() {
-            showNotification('Settings panel coming soon!', 'success');
+        // ==================== SETTINGS ====================
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('show');
+
+            // Load current settings
+            document.getElementById('defaultSlippage').value = slippageTolerance;
+            document.getElementById('autoRefresh').checked = autoRefreshInterval !== null;
+            document.getElementById('showAllRoutes').checked = showAllRoutes;
+            document.getElementById('txDeadline').value = localStorage.getItem('brofit_tx_deadline') || '20';
         }
 
-        // Notification System
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+
+            // Save settings
+            const defaultSlippage = parseFloat(document.getElementById('defaultSlippage').value);
+            if (defaultSlippage && defaultSlippage > 0 && defaultSlippage <= 50) {
+                slippageTolerance = defaultSlippage;
+                localStorage.setItem('brofit_slippage', defaultSlippage);
+                document.getElementById('slippageDisplay').textContent = `${defaultSlippage}%`;
+            }
+
+            const autoRefresh = document.getElementById('autoRefresh').checked;
+            if (autoRefresh && !autoRefreshInterval) {
+                startAutoRefresh();
+            } else if (!autoRefresh && autoRefreshInterval) {
+                stopAutoRefresh();
+            }
+
+            showAllRoutes = document.getElementById('showAllRoutes').checked;
+            localStorage.setItem('brofit_show_all_routes', showAllRoutes);
+
+            const txDeadline = document.getElementById('txDeadline').value;
+            localStorage.setItem('brofit_tx_deadline', txDeadline);
+        }
+
+        // ==================== AUTO-REFRESH ====================
+        function startAutoRefresh() {
+            if (autoRefreshInterval) return;
+
+            autoRefreshInterval = setInterval(() => {
+                const amount = document.getElementById('fromAmount').value;
+                if (amount && parseFloat(amount) > 0 && quoteData) {
+                    console.log('Auto-refreshing quote...');
+                    fetchQuote(amount);
+                }
+            }, 30000); // 30 seconds
+        }
+
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+
+        // ==================== TRANSACTION HISTORY ====================
+        function saveTxHistory(txHash, amount) {
+            try {
+                const history = JSON.parse(localStorage.getItem('brofit_tx_history') || '[]');
+                history.unshift({
+                    txHash,
+                    timestamp: Date.now(),
+                    fromToken: fromToken.symbol,
+                    toToken: toToken.symbol,
+                    fromAmount: amount,
+                    toAmount: quoteData.outputAmount,
+                    exchange: quoteData.exchange,
+                    status: 'confirmed'
+                });
+
+                // Keep only last 50 transactions
+                localStorage.setItem('brofit_tx_history', JSON.stringify(history.slice(0, 50)));
+            } catch (error) {
+                console.error('Failed to save transaction history:', error);
+            }
+        }
+
+        // ==================== NOTIFICATIONS ====================
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             const icon = document.getElementById('notificationIcon');
@@ -1464,19 +2308,42 @@
             }, 4000);
         }
 
-        // Initialize Token Icons
+        // ==================== INITIALIZATION ====================
         function initializeTokenIcons() {
             document.getElementById('fromIcon').innerHTML = `<img src="${fromToken.logo}" alt="${fromToken.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${fromToken.symbol.slice(0,3)}'">`;
             document.getElementById('toIcon').innerHTML = `<img src="${toToken.logo}" alt="${toToken.symbol}" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.textContent='${toToken.symbol.slice(0,3)}'">`;
         }
 
-        // Initialize on load
+        function loadSettings() {
+            // Load saved slippage
+            const savedSlippage = localStorage.getItem('brofit_slippage');
+            if (savedSlippage) {
+                slippageTolerance = parseFloat(savedSlippage);
+                document.getElementById('slippageDisplay').textContent = `${savedSlippage}%`;
+
+                // Set active button
+                document.querySelectorAll('.slippage-button').forEach(btn => {
+                    if (btn.textContent === `${savedSlippage}%`) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            // Load show all routes setting
+            const savedShowAllRoutes = localStorage.getItem('brofit_show_all_routes');
+            if (savedShowAllRoutes === 'true') {
+                showAllRoutes = true;
+            }
+        }
+
+        // Load on page load
         window.addEventListener('load', async () => {
             console.log('BroFit Swap initialized with RocketX API');
-            console.log('API Key:', API_KEY);
-            console.log('Ref Code:', REF_CODE);
+            console.log('Using BroHub Design System v1.0');
 
-            // Initialize token icons
+            loadSettings();
             initializeTokenIcons();
 
             // Fetch token list in background
@@ -1499,6 +2366,12 @@
                 } catch (error) {
                     console.error('Wallet check error:', error);
                 }
+            }
+
+            // Start auto-refresh if enabled
+            const autoRefreshSetting = localStorage.getItem('brofit_auto_refresh');
+            if (autoRefreshSetting !== 'false') {
+                startAutoRefresh();
             }
         });
     </script>
