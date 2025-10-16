@@ -393,12 +393,18 @@
 
         <!-- Total Balance Card -->
         <div class="balance-card">
-            <div class="balance-label">Total Portfolio Value</div>
-            <div class="balance-amount" id="totalBalance">$12,345.67</div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                <div class="balance-label">Total Portfolio Value</div>
+                <button class="btn btn-secondary" id="refreshBtn" style="padding: 6px 12px; font-size: 14px;">
+                    🔄 Refresh
+                </button>
+            </div>
+            <div class="balance-amount" id="totalBalance">$0.00</div>
             <div class="balance-change positive" id="balanceChange">
                 <span>▲</span>
-                <span>+$234.56 (+1.9%) 24h</span>
+                <span>+$0.00 (+0.0%) 24h</span>
             </div>
+            <div id="lastUpdated" style="font-size: 12px; opacity: 0.7; margin-top: 8px;"></div>
         </div>
 
         <!-- Stats Grid -->
@@ -538,23 +544,21 @@
            PORTFOLIO STATE & CONFIGURATION
            ================================================================== */
 
+        // Moralis API Configuration
+        const MORALIS_CONFIG = {
+            apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjM3MmE3NmNkLTRkZmYtNGI2OC05NTRiLWQwNWZiZTlmNTgzYyIsIm9yZ0lkIjoiNDQ3MzE4IiwidXNlcklkIjoiNDYwMjM2IiwidHlwZUlkIjoiYjFjY2Y1OWUtN2M3Mi00YjdlLWJkNTEtMjQzNmRmZDg2OTc2IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3NDczNTM2MDMsImV4cCI6NDkwMzExMzYwM30.d03rGvyBobwlLHYpGJcnnd3nAmWsBUfwZyIpeM-xSSQ',
+            baseUrl: 'https://deep-index.moralis.io/api/v2.2',
+            supportedChains: ['eth', 'polygon', 'bsc', 'arbitrum', 'optimism', 'avalanche']
+        };
+
         const Portfolio = {
             // State
             walletAddress: null,
             holdings: [],
             chainFilter: 'all',
             searchQuery: '',
-
-            // Mock portfolio data
-            mockHoldings: [
-                { token: 'ETH', name: 'Ethereum', chain: 'ethereum', balance: '2.5', value: 5000, change24h: 2.3 },
-                { token: 'MATIC', name: 'Polygon', chain: 'polygon', balance: '10000', value: 2500, change24h: -1.2 },
-                { token: 'BNB', name: 'BNB', chain: 'bsc', balance: '8.5', value: 1800, change24h: 0.8 },
-                { token: 'AVAX', name: 'Avalanche', chain: 'avalanche', balance: '45', value: 1200, change24h: 3.4 },
-                { token: 'ARB', name: 'Arbitrum', chain: 'arbitrum', balance: '1200', value: 900, change24h: -0.5 },
-                { token: 'OP', name: 'Optimism', chain: 'optimism', balance: '350', value: 545, change24h: 1.8 },
-                { token: 'USDC', name: 'USD Coin', chain: 'ethereum', balance: '400', value: 400, change24h: 0.0 }
-            ],
+            isLoading: false,
+            lastUpdated: null,
 
             /* ================================================================
                INITIALIZATION
@@ -584,18 +588,77 @@
 
             async loadPortfolio() {
                 if (!this.walletAddress) {
-                    console.warn('No wallet connected');
-                    this.holdings = this.mockHoldings;
+                    console.warn('⚠️ No wallet connected');
+                    this.holdings = [];
+                    this.renderPortfolio();
                     return;
                 }
 
+                this.isLoading = true;
+                console.log('🔄 Loading portfolio for:', this.walletAddress);
+                showNotification('Loading portfolio from blockchain...', 'info', 3000);
+
                 try {
-                    // In production, would fetch real balances from multiple chains
-                    // For prototype, use mock data
-                    this.holdings = this.mockHoldings;
+                    // Build chain query string
+                    const chainQuery = MORALIS_CONFIG.supportedChains
+                        .map(chain => `chain=${chain}`)
+                        .join('&');
+
+                    // Call Moralis API
+                    const response = await fetch(
+                        `${MORALIS_CONFIG.baseUrl}/wallets/${this.walletAddress}/tokens?${chainQuery}`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'accept': 'application/json',
+                                'X-API-Key': MORALIS_CONFIG.apiKey
+                            }
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(`Moralis API error: ${response.status} ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('📊 Moralis response:', data);
+
+                    // Transform Moralis response to portfolio format
+                    this.holdings = (data.result || [])
+                        .filter(token => {
+                            // Filter out zero balances and spam tokens
+                            const balance = parseFloat(token.balance_formatted || 0);
+                            return balance > 0 && !token.possible_spam;
+                        })
+                        .map(token => ({
+                            token: token.symbol || 'Unknown',
+                            name: token.name || 'Unknown Token',
+                            chain: token.chain || 'unknown',
+                            balance: token.balance_formatted || '0',
+                            value: parseFloat(token.usd_value || 0),
+                            change24h: parseFloat(token.usd_price_24hr_percent_change || 0),
+                            logo: token.logo || token.thumbnail || null,
+                            contractAddress: token.token_address,
+                            decimals: token.decimals || 18
+                        }))
+                        .sort((a, b) => b.value - a.value); // Sort by USD value descending
+
+                    this.lastUpdated = new Date();
+                    console.log(`✅ Portfolio loaded: ${this.holdings.length} tokens, Total value: $${this.holdings.reduce((sum, h) => sum + h.value, 0).toFixed(2)}`);
+
+                    if (this.holdings.length === 0) {
+                        showNotification('No tokens found in wallet', 'info');
+                    } else {
+                        showNotification(`Portfolio loaded: ${this.holdings.length} tokens found`, 'success');
+                    }
+
                 } catch (error) {
-                    console.error('Failed to load portfolio:', error);
+                    console.error('❌ Failed to load portfolio:', error);
+                    showNotification('Failed to load portfolio: ' + error.message, 'error', 5000);
                     this.holdings = [];
+                } finally {
+                    this.isLoading = false;
+                    this.renderPortfolio();
                 }
             },
 
@@ -607,7 +670,7 @@
                 // Calculate totals
                 const totalValue = this.holdings.reduce((sum, h) => sum + h.value, 0);
                 const totalChange24h = this.holdings.reduce((sum, h) => sum + (h.value * h.change24h / 100), 0);
-                const changePercent = (totalChange24h / totalValue * 100).toFixed(2);
+                const changePercent = totalValue > 0 ? (totalChange24h / totalValue * 100).toFixed(2) : '0.00';
 
                 // Update total balance
                 document.getElementById('totalBalance').textContent = formatCurrency(totalValue);
@@ -617,6 +680,12 @@
                     <span>${totalChange24h >= 0 ? '+' : ''}${formatCurrency(totalChange24h)} (${totalChange24h >= 0 ? '+' : ''}${changePercent}%) 24h</span>
                 `;
                 changeEl.className = `balance-change ${totalChange24h >= 0 ? 'positive' : 'negative'}`;
+
+                // Update last updated timestamp
+                if (this.lastUpdated) {
+                    const lastUpdatedEl = document.getElementById('lastUpdated');
+                    lastUpdatedEl.textContent = `Last updated: ${this.lastUpdated.toLocaleTimeString()}`;
+                }
 
                 // Render chain bars
                 this.renderChainBars();
@@ -693,10 +762,17 @@
                 // Render rows
                 filtered.forEach(holding => {
                     const row = document.createElement('tr');
+
+                    // Create token icon HTML - use logo if available, otherwise fallback to abbreviation
+                    const tokenIconHtml = holding.logo ?
+                        `<img src="${holding.logo}" class="token-icon-large" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';" style="border-radius: 50%;">
+                         <div class="token-icon-large" style="display:none;">${holding.token.slice(0, 3)}</div>` :
+                        `<div class="token-icon-large">${holding.token.slice(0, 3)}</div>`;
+
                     row.innerHTML = `
                         <td>
                             <div class="token-cell">
-                                <div class="token-icon-large">${holding.token.slice(0, 3)}</div>
+                                ${tokenIconHtml}
                                 <div class="token-info">
                                     <div class="token-name">${holding.name}</div>
                                     <div class="token-symbol">${holding.token}</div>
@@ -727,6 +803,13 @@
                ============================================================== */
 
             setupEventListeners() {
+                // Refresh button
+                document.getElementById('refreshBtn').addEventListener('click', () => {
+                    if (!this.isLoading) {
+                        this.loadPortfolio();
+                    }
+                });
+
                 // Search input
                 document.getElementById('searchTokens').addEventListener('input', debounce((e) => {
                     this.searchQuery = e.target.value.trim();
