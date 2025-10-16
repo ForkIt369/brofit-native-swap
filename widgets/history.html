@@ -707,6 +707,11 @@
              * Show demo mode banner
              */
             showDemoBanner() {
+                // Check if banner already exists
+                if (document.querySelector('.demo-banner')) {
+                    return;
+                }
+
                 const banner = document.createElement('div');
                 banner.className = 'demo-banner';
                 banner.style.cssText = `
@@ -730,6 +735,11 @@
              * Show API error banner
              */
             showApiErrorBanner() {
+                // Check if banner already exists
+                if (document.querySelector('.api-error-banner')) {
+                    return;
+                }
+
                 const banner = document.createElement('div');
                 banner.className = 'api-error-banner';
                 banner.style.cssText = `
