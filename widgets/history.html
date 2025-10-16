@@ -527,6 +527,9 @@
             async init() {
                 console.log('📜 Initializing Transaction History...');
 
+                // Listen for wallet updates from parent dashboard
+                this.listenForWalletUpdates();
+
                 // Check wallet connection
                 this.walletAddress = this.getConnectedWallet();
 
@@ -554,21 +557,66 @@
                ============================================================== */
 
             getConnectedWallet() {
-                // Try to get wallet address from global state or localStorage
+                // Try to get wallet address from multiple sources
+
+                // 1. Try parent window's state manager (if in iframe)
+                try {
+                    if (window.parent && window.parent.stateManager) {
+                        const address = window.parent.stateManager.getState('wallet.address');
+                        if (address) {
+                            console.log('✅ Got wallet from parent state:', address);
+                            return address;
+                        }
+                    }
+                } catch (error) {
+                    // Cross-origin iframe - can't access parent
+                    console.log('⚠️ Cannot access parent state (cross-origin)');
+                }
+
+                // 2. Try localStorage
+                const stored = localStorage.getItem('brofit_connected_wallet');
+                if (stored) {
+                    try {
+                        const wallet = JSON.parse(stored);
+                        console.log('✅ Got wallet from localStorage:', wallet.address);
+                        return wallet.address;
+                    } catch (error) {
+                        console.error('Failed to parse stored wallet:', error);
+                    }
+                }
+
+                // 3. Try global window state (if running standalone)
                 if (window.walletState && window.walletState.address) {
+                    console.log('✅ Got wallet from window.walletState:', window.walletState.address);
                     return window.walletState.address;
                 }
 
-                const stored = localStorage.getItem('brofit_connected_wallet');
-                return stored ? JSON.parse(stored).address : null;
+                console.log('⚠️ No wallet found');
+                return null;
+            },
+
+            /**
+             * Listen for wallet messages from parent
+             */
+            listenForWalletUpdates() {
+                window.addEventListener('message', (event) => {
+                    if (event.data.type === 'WALLET_CONNECTED') {
+                        console.log('📨 Received wallet connected message:', event.data.address);
+                        this.walletAddress = event.data.address;
+                        this.init(); // Reload with new wallet
+                    } else if (event.data.type === 'WALLET_DISCONNECTED') {
+                        console.log('📨 Received wallet disconnected message');
+                        this.walletAddress = null;
+                        this.showWalletRequiredState();
+                    }
+                });
             },
 
             showWalletRequiredState() {
                 const emptyState = document.getElementById('emptyState');
                 emptyState.querySelector('.empty-title').textContent = 'Connect Your Wallet';
                 emptyState.querySelector('.empty-description').innerHTML =
-                    'Connect your wallet to view your transaction history<br><br>' +
-                    '<button class="btn btn-primary" onclick="window.parent.postMessage({ type: \'CONNECT_WALLET\' }, \'*\')">Connect Wallet</button>';
+                    'Please connect your wallet using the button in the top-right corner to view your transaction history';
                 emptyState.classList.remove('hidden');
 
                 // Hide filters and pagination

@@ -177,11 +177,26 @@ class DashboardController {
         // Update state manager
         window.stateManager.setWallet(address, window.ethereum, chainId);
 
+        // IMPORTANT: Also save to localStorage for iframe widgets
+        localStorage.setItem('brofit_connected_wallet', JSON.stringify({
+            address,
+            chainId,
+            connected: true,
+            timestamp: Date.now()
+        }));
+
         // Update UI
         this.updateWalletUI(address);
 
         // Load portfolio data
         this.loadPortfolioData(address);
+
+        // Notify iframe widgets of wallet connection
+        this.notifyWidgets({
+            type: 'WALLET_CONNECTED',
+            address,
+            chainId
+        });
     }
 
     /**
@@ -193,8 +208,26 @@ class DashboardController {
         // Update state manager
         window.stateManager.disconnectWallet();
 
+        // Clear localStorage
+        localStorage.removeItem('brofit_connected_wallet');
+
         // Update UI
         this.updateWalletUI(null);
+
+        // Notify iframe widgets of wallet disconnect
+        this.notifyWidgets({
+            type: 'WALLET_DISCONNECTED'
+        });
+    }
+
+    /**
+     * Notify iframe widgets of state changes
+     */
+    notifyWidgets(message) {
+        const widgetFrame = document.getElementById('widgetFrame');
+        if (widgetFrame && widgetFrame.contentWindow) {
+            widgetFrame.contentWindow.postMessage(message, '*');
+        }
     }
 
     /**
