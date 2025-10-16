@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/dashboard/:path*",
+      "destination": "/dashboard.html"
+    },
+    {
       "source": "/gallery",
       "destination": "/gallery.html"
     },

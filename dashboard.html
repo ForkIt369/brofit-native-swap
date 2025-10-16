@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BroFit | Multi-Chain DeFi Hub</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>💪</text></svg>">
+</head>
+<body>
+    <!-- 💪 UNIFIED DASHBOARD SHELL -->
+    <div class="dashboard-container">
+
+        <!-- HEADER -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <!-- Logo & Brand -->
+                <div class="header-brand">
+                    <div class="logo">💪</div>
+                    <div class="brand-text">
+                        <h1 class="brand-name">BroFit</h1>
+                        <p class="brand-tagline">Multi-Chain DeFi Hub</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="header-nav">
+                    <button class="nav-tab active" data-route="dashboard">
+                        <span class="nav-icon">🏠</span>
+                        <span class="nav-label">Dashboard</span>
+                    </button>
+                    <button class="nav-tab" data-route="swap">
+                        <span class="nav-icon">🔄</span>
+                        <span class="nav-label">Swap</span>
+                    </button>
+                    <button class="nav-tab" data-route="bridge">
+                        <span class="nav-icon">🌉</span>
+                        <span class="nav-label">Bridge</span>
+                    </button>
+                    <button class="nav-tab" data-route="portfolio">
+                        <span class="nav-icon">💼</span>
+                        <span class="nav-label">Portfolio</span>
+                    </button>
+                    <button class="nav-tab" data-route="history">
+                        <span class="nav-icon">📜</span>
+                        <span class="nav-label">History</span>
+                    </button>
+                </nav>
+
+                <!-- Wallet Info -->
+                <div class="header-wallet">
+                    <div class="wallet-info" id="walletInfo" style="display: none;">
+                        <div class="wallet-chain" id="walletChain">Ethereum</div>
+                        <div class="wallet-balance" id="walletBalance">$0.00</div>
+                        <div class="wallet-address" id="walletAddress">0x0000...0000</div>
+                    </div>
+                    <button class="btn btn-primary" id="connectWalletBtn">
+                        Connect Wallet
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="dashboard-main">
+            <!-- Widget Container -->
+            <div class="widget-container" id="widgetContainer">
+                <!-- Dashboard Home (Default View) -->
+                <div class="dashboard-home" id="dashboardHome">
+                    <div class="dashboard-grid">
+
+                        <!-- Portfolio Summary Card -->
+                        <div class="dashboard-card card-portfolio">
+                            <div class="card-header">
+                                <h2 class="card-title">💼 Portfolio Overview</h2>
+                                <button class="btn-icon" id="refreshPortfolio" title="Refresh">🔄</button>
+                            </div>
+                            <div class="card-content">
+                                <div class="portfolio-summary">
+                                    <div class="summary-main">
+                                        <div class="total-value">
+                                            <span class="label">Total Value</span>
+                                            <span class="value" id="totalPortfolioValue">$0.00</span>
+                                        </div>
+                                        <div class="value-change">
+                                            <span class="change-24h" id="portfolioChange24h">+0.00%</span>
+                                            <span class="change-label">24h</span>
+                                        </div>
+                                    </div>
+                                    <div class="summary-stats">
+                                        <div class="stat-item">
+                                            <span class="stat-label">Active Chains</span>
+                                            <span class="stat-value" id="dashboardActiveChains">0</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Total Assets</span>
+                                            <span class="stat-value" id="dashboardTotalAssets">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-secondary btn-full" onclick="navigateToRoute('portfolio')">
+                                    View Full Portfolio →
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Card -->
+                        <div class="dashboard-card card-actions">
+                            <div class="card-header">
+                                <h2 class="card-title">⚡ Quick Actions</h2>
+                            </div>
+                            <div class="card-content">
+                                <div class="quick-actions">
+                                    <button class="action-btn" onclick="navigateToRoute('swap')">
+                                        <span class="action-icon">🔄</span>
+                                        <span class="action-label">Swap Tokens</span>
+                                        <span class="action-desc">Exchange across 180+ chains</span>
+                                    </button>
+                                    <button class="action-btn" onclick="navigateToRoute('bridge')">
+                                        <span class="action-icon">🌉</span>
+                                        <span class="action-label">Bridge Assets</span>
+                                        <span class="action-desc">Move tokens between chains</span>
+                                    </button>
+                                    <button class="action-btn" onclick="navigateToRoute('history')">
+                                        <span class="action-icon">📜</span>
+                                        <span class="action-label">View History</span>
+                                        <span class="action-desc">Track all transactions</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity Card -->
+                        <div class="dashboard-card card-activity">
+                            <div class="card-header">
+                                <h2 class="card-title">📊 Recent Activity</h2>
+                                <button class="btn-text" onclick="navigateToRoute('history')">View All</button>
+                            </div>
+                            <div class="card-content">
+                                <div class="activity-list" id="recentActivityList">
+                                    <div class="empty-state">
+                                        <p>No recent transactions</p>
+                                        <p class="empty-state-sub">Your transaction history will appear here</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Top Holdings Card -->
+                        <div class="dashboard-card card-holdings">
+                            <div class="card-header">
+                                <h2 class="card-title">🏆 Top Holdings</h2>
+                                <button class="btn-text" onclick="navigateToRoute('portfolio')">View All</button>
+                            </div>
+                            <div class="card-content">
+                                <div class="holdings-list" id="topHoldingsList">
+                                    <div class="empty-state">
+                                        <p>No holdings found</p>
+                                        <p class="empty-state-sub">Connect your wallet to view holdings</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Widget iframes will be loaded here -->
+                <iframe id="widgetFrame" class="widget-frame" style="display: none;"></iframe>
+            </div>
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="dashboard-footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="https://github.com/yourusername/brofit" target="_blank">GitHub</a>
+                    <a href="/widgets/gallery" target="_blank">Widget Gallery</a>
+                    <a href="https://rocketx.exchange" target="_blank">Powered by RocketX</a>
+                </div>
+                <div class="footer-stats">
+                    <span class="stat">180+ Chains</span>
+                    <span class="stat-separator">•</span>
+                    <span class="stat">6 Blockchains</span>
+                    <span class="stat-separator">•</span>
+                    <span class="stat">Real-Time Data</span>
+                </div>
+                <div class="footer-info">
+                    <span>Built with 💪 by the BroFit team</span>
+                    <span class="footer-separator">|</span>
+                    <span>v1.4.0</span>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- NOTIFICATION SYSTEM -->
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <!-- SCRIPTS -->
+    <script src="widgets/shared/utils.js"></script>
+    <script src="widgets/shared/state-manager.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
