@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Portfolio Dashboard | BroFit</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="./shared/styles.css">
+
+    <style>
+        /* ====================================================================
+           PORTFOLIO WIDGET SPECIFIC STYLES
+           ================================================================== */
+
+        .portfolio-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+
+        /* Total Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            margin-bottom: var(--space-xl);
+            color: white;
+        }
+
+        .balance-label {
+            font-size: var(--font-size-md);
+            opacity: 0.9;
+            margin-bottom: var(--space-sm);
+        }
+
+        .balance-amount {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            font-family: var(--font-mono);
+            margin-bottom: var(--space-md);
+        }
+
+        .balance-change {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .balance-change.positive {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .balance-change.negative {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            backdrop-filter: blur(var(--glass-blur));
+        }
+
+        .stat-title {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .stat-value {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+
+        .stat-list {
+            list-style: none;
+        }
+
+        .stat-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-sm) 0;
+            font-size: var(--font-size-sm);
+        }
+
+        .stat-list-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-list-value {
+            color: var(--text-primary);
+            font-weight: var(--font-weight-semibold);
+            font-family: var(--font-mono);
+        }
+
+        /* Chain Breakdown */
+        .chain-breakdown {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            backdrop-filter: blur(var(--glass-blur));
+            margin-bottom: var(--space-xl);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .section-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+        }
+
+        .chain-bars {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        .chain-bar-item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .chain-bar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chain-bar-name {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+        }
+
+        .chain-bar-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .chain-bar-value {
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+        }
+
+        .chain-bar-progress {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .chain-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-green), var(--primary-green-light));
+            border-radius: var(--radius-full);
+            transition: width var(--transition-slow);
+        }
+
+        /* Holdings Table */
+        .holdings-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            backdrop-filter: blur(var(--glass-blur));
+        }
+
+        .table-controls {
+            display: flex;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .holdings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .holdings-table thead {
+            border-bottom: 2px solid var(--glass-border);
+        }
+
+        .holdings-table th {
+            text-align: left;
+            padding: var(--space-md);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .holdings-table td {
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .holdings-table tbody tr {
+            transition: background var(--transition-base);
+        }
+
+        .holdings-table tbody tr:hover {
+            background: var(--glass-bg-hover);
+        }
+
+        .token-cell {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .token-icon-large {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .token-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .token-name {
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+        }
+
+        .token-symbol {
+            font-size: var(--font-size-sm);
+            color: var(--text-tertiary);
+        }
+
+        .chain-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: 4px 8px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-medium);
+            color: var(--text-secondary);
+        }
+
+        .balance-cell {
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+        }
+
+        .value-cell {
+            font-family: var(--font-mono);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+        }
+
+        .change-cell {
+            font-weight: var(--font-weight-semibold);
+        }
+
+        .change-positive {
+            color: var(--success);
+        }
+
+        .change-negative {
+            color: var(--error);
+        }
+
+        /* Empty State */
+        .empty-portfolio {
+            text-align: center;
+            padding: var(--space-3xl);
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: var(--space-lg);
+            opacity: 0.3;
+        }
+
+        .empty-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .empty-description {
+            font-size: var(--font-size-md);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xl);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .holdings-table {
+                font-size: var(--font-size-sm);
+            }
+
+            .holdings-table th,
+            .holdings-table td {
+                padding: var(--space-sm);
+            }
+
+            /* Hide some columns on mobile */
+            .holdings-table th:nth-child(3),
+            .holdings-table td:nth-child(3),
+            .holdings-table th:nth-child(5),
+            .holdings-table td:nth-child(5) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 414px) {
+            .balance-card {
+                padding: var(--space-xl);
+            }
+
+            .balance-amount {
+                font-size: var(--font-size-2xl);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="portfolio-container">
+        <!-- Header -->
+        <div class="widget-header">
+            <h1 class="widget-title">💼 Multi-Chain Portfolio</h1>
+            <p class="widget-description">Track your assets across all blockchain networks</p>
+        </div>
+
+        <!-- Total Balance Card -->
+        <div class="balance-card">
+            <div class="balance-label">Total Portfolio Value</div>
+            <div class="balance-amount" id="totalBalance">$12,345.67</div>
+            <div class="balance-change positive" id="balanceChange">
+                <span>▲</span>
+                <span>+$234.56 (+1.9%) 24h</span>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <!-- Chains -->
+            <div class="stat-card">
+                <div class="stat-title">Active Chains</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="activeChains">5</div>
+                    <ul class="stat-list" id="chainsList">
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">Ethereum</span>
+                            <span class="stat-list-value">$5,000</span>
+                        </li>
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">Polygon</span>
+                            <span class="stat-list-value">$2,500</span>
+                        </li>
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">BNB Chain</span>
+                            <span class="stat-list-value">$1,800</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Top Holdings -->
+            <div class="stat-card">
+                <div class="stat-title">Top Holdings</div>
+                <div class="stat-content">
+                    <ul class="stat-list" id="topHoldings">
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">ETH</span>
+                            <span class="stat-list-value">$5,000 (40.5%)</span>
+                        </li>
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">MATIC</span>
+                            <span class="stat-list-value">$2,500 (20.2%)</span>
+                        </li>
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">BNB</span>
+                            <span class="stat-list-value">$1,800 (14.6%)</span>
+                        </li>
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">12 more...</span>
+                            <span class="stat-list-value">$3,045 (24.7%)</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="stat-card">
+                <div class="stat-title">Performance</div>
+                <div class="stat-content">
+                    <ul class="stat-list">
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">24h Change</span>
+                            <span class="stat-list-value change-positive">+1.9%</span>
+                        </li>
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">7d Change</span>
+                            <span class="stat-list-value change-positive">+5.3%</span>
+                        </li>
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">30d Change</span>
+                            <span class="stat-list-value change-negative">-2.1%</span>
+                        </li>
+                        <li class="stat-list-item">
+                            <span class="stat-list-label">All Time</span>
+                            <span class="stat-list-value change-positive">+45.8%</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chain Breakdown -->
+        <div class="chain-breakdown">
+            <div class="section-header">
+                <div class="section-title">Chain Breakdown</div>
+            </div>
+            <div class="chain-bars" id="chainBars">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Holdings Table -->
+        <div class="holdings-section">
+            <div class="section-header">
+                <div class="section-title">Token Holdings</div>
+                <div class="table-controls">
+                    <input type="text" id="searchTokens" class="input input-search" placeholder="Search tokens..." style="max-width: 300px;">
+                    <select class="select" id="chainFilter" style="max-width: 200px;">
+                        <option value="all">All Chains</option>
+                        <option value="ethereum">Ethereum</option>
+                        <option value="polygon">Polygon</option>
+                        <option value="bsc">BNB Chain</option>
+                        <option value="arbitrum">Arbitrum</option>
+                    </select>
+                    <button class="btn btn-secondary" id="exportBtn">Export CSV</button>
+                </div>
+            </div>
+
+            <table class="holdings-table" id="holdingsTable">
+                <thead>
+                    <tr>
+                        <th>Token</th>
+                        <th>Chain</th>
+                        <th>Balance</th>
+                        <th>Value</th>
+                        <th>24h Change</th>
+                    </tr>
+                </thead>
+                <tbody id="holdingsBody">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+
+            <!-- Empty State (hidden when data loads) -->
+            <div class="empty-portfolio hidden" id="emptyState">
+                <div class="empty-icon">💼</div>
+                <div class="empty-title">No Assets Found</div>
+                <div class="empty-description">Connect your wallet to view your portfolio</div>
+                <button class="btn btn-primary">Connect Wallet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared Utilities -->
+    <script src="./shared/utils.js"></script>
+    <script src="./shared/rocketx-api.js"></script>
+
+    <!-- Portfolio Logic -->
+    <script>
+        /* ====================================================================
+           PORTFOLIO STATE & CONFIGURATION
+           ================================================================== */
+
+        const Portfolio = {
+            // State
+            walletAddress: null,
+            holdings: [],
+            chainFilter: 'all',
+            searchQuery: '',
+
+            // Mock portfolio data
+            mockHoldings: [
+                { token: 'ETH', name: 'Ethereum', chain: 'ethereum', balance: '2.5', value: 5000, change24h: 2.3 },
+                { token: 'MATIC', name: 'Polygon', chain: 'polygon', balance: '10000', value: 2500, change24h: -1.2 },
+                { token: 'BNB', name: 'BNB', chain: 'bsc', balance: '8.5', value: 1800, change24h: 0.8 },
+                { token: 'AVAX', name: 'Avalanche', chain: 'avalanche', balance: '45', value: 1200, change24h: 3.4 },
+                { token: 'ARB', name: 'Arbitrum', chain: 'arbitrum', balance: '1200', value: 900, change24h: -0.5 },
+                { token: 'OP', name: 'Optimism', chain: 'optimism', balance: '350', value: 545, change24h: 1.8 },
+                { token: 'USDC', name: 'USD Coin', chain: 'ethereum', balance: '400', value: 400, change24h: 0.0 }
+            ],
+
+            /* ================================================================
+               INITIALIZATION
+               ============================================================== */
+
+            async init() {
+                console.log('💼 Initializing Portfolio...');
+
+                // Check wallet
+                this.walletAddress = await getWalletAddress();
+
+                // Load portfolio data
+                await this.loadPortfolio();
+
+                // Setup event listeners
+                this.setupEventListeners();
+
+                // Render UI
+                this.renderPortfolio();
+
+                console.log('✅ Portfolio initialized');
+            },
+
+            /* ================================================================
+               DATA LOADING
+               ============================================================== */
+
+            async loadPortfolio() {
+                if (!this.walletAddress) {
+                    console.warn('No wallet connected');
+                    this.holdings = this.mockHoldings;
+                    return;
+                }
+
+                try {
+                    // In production, would fetch real balances from multiple chains
+                    // For prototype, use mock data
+                    this.holdings = this.mockHoldings;
+                } catch (error) {
+                    console.error('Failed to load portfolio:', error);
+                    this.holdings = [];
+                }
+            },
+
+            /* ================================================================
+               RENDERING
+               ============================================================== */
+
+            renderPortfolio() {
+                // Calculate totals
+                const totalValue = this.holdings.reduce((sum, h) => sum + h.value, 0);
+                const totalChange24h = this.holdings.reduce((sum, h) => sum + (h.value * h.change24h / 100), 0);
+                const changePercent = (totalChange24h / totalValue * 100).toFixed(2);
+
+                // Update total balance
+                document.getElementById('totalBalance').textContent = formatCurrency(totalValue);
+                const changeEl = document.getElementById('balanceChange');
+                changeEl.innerHTML = `
+                    <span>${totalChange24h >= 0 ? '▲' : '▼'}</span>
+                    <span>${totalChange24h >= 0 ? '+' : ''}${formatCurrency(totalChange24h)} (${totalChange24h >= 0 ? '+' : ''}${changePercent}%) 24h</span>
+                `;
+                changeEl.className = `balance-change ${totalChange24h >= 0 ? 'positive' : 'negative'}`;
+
+                // Render chain bars
+                this.renderChainBars();
+
+                // Render holdings table
+                this.renderHoldingsTable();
+            },
+
+            renderChainBars() {
+                const container = document.getElementById('chainBars');
+                container.innerHTML = '';
+
+                // Group by chain
+                const chainTotals = {};
+                this.holdings.forEach(holding => {
+                    if (!chainTotals[holding.chain]) {
+                        chainTotals[holding.chain] = 0;
+                    }
+                    chainTotals[holding.chain] += holding.value;
+                });
+
+                // Calculate total for percentages
+                const totalValue = Object.values(chainTotals).reduce((sum, v) => sum + v, 0);
+
+                // Sort by value
+                const sorted = Object.entries(chainTotals).sort((a, b) => b[1] - a[1]);
+
+                // Render bars
+                sorted.forEach(([chain, value]) => {
+                    const percent = (value / totalValue * 100).toFixed(1);
+
+                    const item = document.createElement('div');
+                    item.className = 'chain-bar-item';
+                    item.innerHTML = `
+                        <div class="chain-bar-header">
+                            <div class="chain-bar-name">
+                                <div class="chain-bar-icon">${chain.slice(0, 3).toUpperCase()}</div>
+                                <span>${chain.charAt(0).toUpperCase() + chain.slice(1)}</span>
+                            </div>
+                            <div class="chain-bar-value">${formatCurrency(value)} (${percent}%)</div>
+                        </div>
+                        <div class="chain-bar-progress">
+                            <div class="chain-bar-fill" style="width: ${percent}%"></div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            },
+
+            renderHoldingsTable() {
+                const tbody = document.getElementById('holdingsBody');
+                tbody.innerHTML = '';
+
+                // Filter holdings
+                const filtered = this.holdings.filter(holding => {
+                    // Chain filter
+                    if (this.chainFilter !== 'all' && holding.chain !== this.chainFilter) {
+                        return false;
+                    }
+
+                    // Search filter
+                    if (this.searchQuery) {
+                        const query = this.searchQuery.toLowerCase();
+                        return (
+                            holding.token.toLowerCase().includes(query) ||
+                            holding.name.toLowerCase().includes(query) ||
+                            holding.chain.toLowerCase().includes(query)
+                        );
+                    }
+
+                    return true;
+                });
+
+                // Render rows
+                filtered.forEach(holding => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <div class="token-cell">
+                                <div class="token-icon-large">${holding.token.slice(0, 3)}</div>
+                                <div class="token-info">
+                                    <div class="token-name">${holding.name}</div>
+                                    <div class="token-symbol">${holding.token}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="chain-badge">
+                                ${holding.chain.charAt(0).toUpperCase() + holding.chain.slice(1)}
+                            </span>
+                        </td>
+                        <td class="balance-cell">${formatNumber(parseFloat(holding.balance), 4)} ${holding.token}</td>
+                        <td class="value-cell">${formatCurrency(holding.value)}</td>
+                        <td class="change-cell ${holding.change24h >= 0 ? 'change-positive' : 'change-negative'}">
+                            ${holding.change24h >= 0 ? '+' : ''}${holding.change24h.toFixed(2)}%
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Show/hide empty state
+                const emptyState = document.getElementById('emptyState');
+                emptyState.classList.toggle('hidden', filtered.length > 0);
+            },
+
+            /* ================================================================
+               EVENT HANDLERS
+               ============================================================== */
+
+            setupEventListeners() {
+                // Search input
+                document.getElementById('searchTokens').addEventListener('input', debounce((e) => {
+                    this.searchQuery = e.target.value.trim();
+                    this.renderHoldingsTable();
+                }, 300));
+
+                // Chain filter
+                document.getElementById('chainFilter').addEventListener('change', (e) => {
+                    this.chainFilter = e.target.value;
+                    this.renderHoldingsTable();
+                });
+
+                // Export button
+                document.getElementById('exportBtn').addEventListener('click', () => {
+                    this.exportToCSV();
+                });
+            },
+
+            /* ================================================================
+               EXPORT FUNCTIONALITY
+               ============================================================== */
+
+            exportToCSV() {
+                // Create CSV content
+                const headers = ['Token', 'Name', 'Chain', 'Balance', 'Value (USD)', '24h Change (%)'];
+                const rows = this.holdings.map(h => [
+                    h.token,
+                    h.name,
+                    h.chain,
+                    h.balance,
+                    h.value.toFixed(2),
+                    h.change24h.toFixed(2)
+                ]);
+
+                const csv = [
+                    headers.join(','),
+                    ...rows.map(row => row.join(','))
+                ].join('\n');
+
+                // Download CSV
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `portfolio_${Date.now()}.csv`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+
+                showNotification('Portfolio exported to CSV', 'success');
+            }
+        };
+
+        /* ====================================================================
+           INITIALIZE ON PAGE LOAD
+           ================================================================== */
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Portfolio.init();
+        });
+    </script>
+</body>
+</html>

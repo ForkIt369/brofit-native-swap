@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ChainSelector Widget | BroFit</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="./shared/styles.css">
+
+    <style>
+        /* ====================================================================
+           CHAIN SELECTOR SPECIFIC STYLES
+           ================================================================== */
+
+        .chain-selector-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+
+        /* Search Bar */
+        .search-container {
+            margin-bottom: var(--space-lg);
+        }
+
+        /* Popular Chains Grid */
+        .popular-chains {
+            margin-bottom: var(--space-xl);
+        }
+
+        .popular-chains-title {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .popular-chains-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .chain-card-popular {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+            backdrop-filter: blur(var(--glass-blur));
+        }
+
+        .chain-card-popular:hover {
+            background: var(--glass-bg-hover);
+            border-color: var(--primary-green);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .chain-card-popular.selected {
+            background: rgba(62, 184, 95, 0.1);
+            border-color: var(--primary-green);
+        }
+
+        .chain-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+            color: white;
+            font-size: 14px;
+        }
+
+        .chain-name {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .chain-balance {
+            font-size: var(--font-size-xs);
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+        }
+
+        /* Chain Groups */
+        .chain-group {
+            margin-bottom: var(--space-xl);
+        }
+
+        .chain-group-title {
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .chain-group-icon {
+            font-size: 20px;
+        }
+
+        .chain-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        /* Chain List Item */
+        .chain-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            backdrop-filter: blur(var(--glass-blur));
+        }
+
+        .chain-item:hover {
+            background: var(--glass-bg-hover);
+            border-color: var(--primary-green);
+            transform: translateX(4px);
+        }
+
+        .chain-item.selected {
+            background: rgba(62, 184, 95, 0.1);
+            border-color: var(--primary-green);
+        }
+
+        .chain-item-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .chain-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chain-item-name {
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .chain-item-symbol {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .chain-item-balance {
+            text-align: right;
+            font-family: var(--font-mono);
+        }
+
+        .chain-item-balance-amount {
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+        }
+
+        .chain-item-balance-usd {
+            font-size: var(--font-size-sm);
+            color: var(--text-tertiary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-3xl) var(--space-lg);
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: var(--space-md);
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--space-sm);
+        }
+
+        .empty-state-hint {
+            font-size: var(--font-size-sm);
+            color: var(--text-tertiary);
+        }
+
+        /* Loading State */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-3xl);
+            gap: var(--space-lg);
+        }
+
+        .loading-text {
+            font-size: var(--font-size-md);
+            color: var(--text-secondary);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .popular-chains-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+
+            .chain-item-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 414px) {
+            .chain-selector-container {
+                padding: var(--space-md);
+            }
+
+            .popular-chains-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: var(--space-sm);
+            }
+
+            .chain-card-popular {
+                padding: var(--space-sm);
+            }
+
+            .chain-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+
+            .chain-name {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Chain Selector Container -->
+    <div class="chain-selector-container">
+        <!-- Header -->
+        <div class="widget-header">
+            <h1 class="widget-title">⛓️ Select Network</h1>
+            <p class="widget-description">Choose from 180+ supported blockchain networks</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input
+                type="text"
+                id="chainSearch"
+                class="input input-search"
+                placeholder="Search chains by name or symbol..."
+                autocomplete="off"
+            >
+        </div>
+
+        <!-- Popular Chains -->
+        <div class="popular-chains" id="popularChains">
+            <div class="popular-chains-title">
+                🔥 Popular Networks
+            </div>
+            <div class="popular-chains-grid" id="popularChainsGrid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Chain Groups -->
+        <div id="chainGroups">
+            <!-- Loading State -->
+            <div class="loading-container" id="loadingState">
+                <div class="spinner spinner-lg"></div>
+                <div class="loading-text">Loading networks...</div>
+            </div>
+
+            <!-- Chain groups will be populated by JavaScript -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state hidden" id="emptyState">
+            <div class="empty-state-icon">🔍</div>
+            <div class="empty-state-text">No chains found</div>
+            <div class="empty-state-hint">Try a different search term</div>
+        </div>
+    </div>
+
+    <!-- Shared Utilities -->
+    <script src="./shared/utils.js"></script>
+    <script src="./shared/rocketx-api.js"></script>
+
+    <!-- Chain Selector Logic -->
+    <script>
+        /* ====================================================================
+           CHAIN SELECTOR STATE & CONFIGURATION
+           ================================================================== */
+
+        const ChainSelector = {
+            // State
+            chains: [],
+            selectedChain: null,
+            walletAddress: null,
+            searchQuery: '',
+
+            // Popular chains (most used)
+            popularChainIds: [
+                'ethereum',
+                'polygon',
+                'bsc',
+                'arbitrum',
+                'optimism',
+                'avalanche'
+            ],
+
+            // Chain categories
+            categories: {
+                'L1': { icon: '🏗️', title: 'Layer 1 Blockchains' },
+                'L2': { icon: '⚡', title: 'Layer 2 Networks' },
+                'sidechain': { icon: '🌉', title: 'Sidechains & Parachains' }
+            },
+
+            /* ================================================================
+               INITIALIZATION
+               ============================================================== */
+
+            async init() {
+                console.log('🚀 Initializing ChainSelector...');
+
+                // Check wallet connection
+                this.walletAddress = await getWalletAddress();
+
+                // Load chains
+                await this.loadChains();
+
+                // Setup event listeners
+                this.setupEventListeners();
+
+                // Restore last selected chain
+                this.restoreSelection();
+
+                console.log('✅ ChainSelector initialized');
+            },
+
+            /* ================================================================
+               DATA LOADING
+               ============================================================== */
+
+            async loadChains() {
+                try {
+                    // Fetch chains from RocketX API
+                    this.chains = await rocketxAPI.getSupportedChains();
+                    console.log(`📊 Loaded ${this.chains.length} chains`);
+
+                    // Hide loading, show content
+                    document.getElementById('loadingState').classList.add('hidden');
+
+                    // Render chains
+                    this.renderPopularChains();
+                    this.renderChainGroups();
+                } catch (error) {
+                    console.error('❌ Failed to load chains:', error);
+                    showNotification('Failed to load chains', 'error');
+                }
+            },
+
+            /* ================================================================
+               RENDERING
+               ============================================================== */
+
+            renderPopularChains() {
+                const grid = document.getElementById('popularChainsGrid');
+                grid.innerHTML = '';
+
+                const popularChains = this.chains.filter(chain =>
+                    this.popularChainIds.includes(chain.id)
+                );
+
+                popularChains.forEach(chain => {
+                    const card = this.createPopularChainCard(chain);
+                    grid.appendChild(card);
+                });
+            },
+
+            createPopularChainCard(chain) {
+                const card = document.createElement('div');
+                card.className = 'chain-card-popular';
+                if (this.selectedChain?.id === chain.id) {
+                    card.classList.add('selected');
+                }
+
+                const icon = document.createElement('div');
+                icon.className = 'chain-icon';
+                icon.textContent = chain.symbol?.slice(0, 3) || chain.name?.slice(0, 2) || '?';
+
+                const name = document.createElement('div');
+                name.className = 'chain-name';
+                name.textContent = chain.name;
+
+                const balance = document.createElement('div');
+                balance.className = 'chain-balance';
+                balance.textContent = this.walletAddress ? 'Loading...' : '--';
+
+                card.appendChild(icon);
+                card.appendChild(name);
+                card.appendChild(balance);
+
+                // Click handler
+                card.addEventListener('click', () => this.selectChain(chain));
+
+                // Load balance if wallet connected
+                if (this.walletAddress) {
+                    this.loadChainBalance(chain, balance);
+                }
+
+                return card;
+            },
+
+            renderChainGroups() {
+                const container = document.getElementById('chainGroups');
+
+                // Group chains by category
+                const grouped = this.groupChainsByCategory();
+
+                // Clear previous content (except loading state)
+                const loadingState = document.getElementById('loadingState');
+                container.innerHTML = '';
+                if (loadingState) {
+                    container.appendChild(loadingState);
+                }
+
+                // Render each category
+                Object.entries(grouped).forEach(([category, chains]) => {
+                    if (chains.length === 0) return;
+
+                    const group = this.createChainGroup(category, chains);
+                    container.appendChild(group);
+                });
+            },
+
+            groupChainsByCategory() {
+                const grouped = {
+                    'L1': [],
+                    'L2': [],
+                    'sidechain': []
+                };
+
+                this.chains.forEach(chain => {
+                    // Filter by search query
+                    if (this.searchQuery && !this.matchesSearch(chain)) {
+                        return;
+                    }
+
+                    const category = chain.type || 'sidechain';
+                    if (grouped[category]) {
+                        grouped[category].push(chain);
+                    } else {
+                        grouped['sidechain'].push(chain);
+                    }
+                });
+
+                return grouped;
+            },
+
+            matchesSearch(chain) {
+                const query = this.searchQuery.toLowerCase();
+                return (
+                    chain.name?.toLowerCase().includes(query) ||
+                    chain.symbol?.toLowerCase().includes(query) ||
+                    chain.id?.toLowerCase().includes(query)
+                );
+            },
+
+            createChainGroup(category, chains) {
+                const group = document.createElement('div');
+                group.className = 'chain-group';
+
+                // Group header
+                const header = document.createElement('div');
+                header.className = 'chain-group-title';
+
+                const icon = document.createElement('span');
+                icon.className = 'chain-group-icon';
+                icon.textContent = this.categories[category]?.icon || '⛓️';
+
+                const title = document.createElement('span');
+                title.textContent = `${this.categories[category]?.title || category} (${chains.length})`;
+
+                header.appendChild(icon);
+                header.appendChild(title);
+                group.appendChild(header);
+
+                // Chain list
+                const list = document.createElement('div');
+                list.className = 'chain-list';
+
+                chains.forEach(chain => {
+                    const item = this.createChainItem(chain);
+                    list.appendChild(item);
+                });
+
+                group.appendChild(list);
+                return group;
+            },
+
+            createChainItem(chain) {
+                const item = document.createElement('div');
+                item.className = 'chain-item';
+                if (this.selectedChain?.id === chain.id) {
+                    item.classList.add('selected');
+                }
+
+                // Icon
+                const icon = document.createElement('div');
+                icon.className = 'chain-item-icon';
+                icon.textContent = chain.symbol?.slice(0, 3) || chain.name?.slice(0, 2) || '?';
+
+                // Info
+                const info = document.createElement('div');
+                info.className = 'chain-item-info';
+
+                const name = document.createElement('div');
+                name.className = 'chain-item-name';
+                name.textContent = chain.name;
+
+                const symbol = document.createElement('div');
+                symbol.className = 'chain-item-symbol';
+                symbol.textContent = `${chain.symbol} • Chain ID: ${chain.chain_id || chain.id}`;
+
+                info.appendChild(name);
+                info.appendChild(symbol);
+
+                // Balance
+                const balanceContainer = document.createElement('div');
+                balanceContainer.className = 'chain-item-balance';
+
+                const balanceAmount = document.createElement('div');
+                balanceAmount.className = 'chain-item-balance-amount';
+                balanceAmount.textContent = this.walletAddress ? 'Loading...' : '--';
+
+                const balanceUSD = document.createElement('div');
+                balanceUSD.className = 'chain-item-balance-usd';
+                balanceUSD.textContent = '--';
+
+                balanceContainer.appendChild(balanceAmount);
+                balanceContainer.appendChild(balanceUSD);
+
+                // Assemble
+                item.appendChild(icon);
+                item.appendChild(info);
+                item.appendChild(balanceContainer);
+
+                // Click handler
+                item.addEventListener('click', () => this.selectChain(chain));
+
+                // Load balance if wallet connected
+                if (this.walletAddress) {
+                    this.loadChainBalance(chain, balanceAmount, balanceUSD);
+                }
+
+                return item;
+            },
+
+            /* ================================================================
+               BALANCE LOADING
+               ============================================================== */
+
+            async loadChainBalance(chain, amountElement, usdElement = null) {
+                try {
+                    // Simulate balance fetch (would use Web3 in production)
+                    // For prototype, show mock data
+                    setTimeout(() => {
+                        const mockBalance = (Math.random() * 10).toFixed(4);
+                        const mockUSD = (mockBalance * 2000).toFixed(2);
+
+                        amountElement.textContent = `${mockBalance} ${chain.symbol}`;
+                        if (usdElement) {
+                            usdElement.textContent = `$${mockUSD}`;
+                        }
+                    }, 500 + Math.random() * 1000);
+                } catch (error) {
+                    console.error(`Failed to load balance for ${chain.name}:`, error);
+                    amountElement.textContent = '0.00';
+                    if (usdElement) {
+                        usdElement.textContent = '$0.00';
+                    }
+                }
+            },
+
+            /* ================================================================
+               CHAIN SELECTION
+               ============================================================== */
+
+            selectChain(chain) {
+                console.log('🔗 Chain selected:', chain);
+
+                // Update state
+                this.selectedChain = chain;
+
+                // Save to localStorage
+                saveToStorage('brofit_selected_chain', chain);
+
+                // Update UI
+                this.updateSelectionUI();
+
+                // Emit custom event
+                this.emitChainSelectedEvent(chain);
+
+                // Show notification
+                showNotification(`Switched to ${chain.name}`, 'success', 2000);
+            },
+
+            updateSelectionUI() {
+                // Update popular cards
+                document.querySelectorAll('.chain-card-popular').forEach(card => {
+                    card.classList.remove('selected');
+                });
+
+                // Update chain items
+                document.querySelectorAll('.chain-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+
+                // Add selected class to current chain
+                // (handled in re-render, but could optimize here)
+            },
+
+            emitChainSelectedEvent(chain) {
+                const event = new CustomEvent('chainSelected', {
+                    detail: {
+                        chainId: chain.id,
+                        chainName: chain.name,
+                        symbol: chain.symbol,
+                        chainIdNumber: chain.chain_id,
+                        type: chain.type,
+                        rpcUrl: chain.rpc_url
+                    }
+                });
+
+                document.dispatchEvent(event);
+                window.dispatchEvent(event);
+            },
+
+            restoreSelection() {
+                const savedChain = loadFromStorage('brofit_selected_chain');
+                if (savedChain) {
+                    this.selectedChain = savedChain;
+                    this.updateSelectionUI();
+                }
+            },
+
+            /* ================================================================
+               EVENT HANDLERS
+               ============================================================== */
+
+            setupEventListeners() {
+                // Search input
+                const searchInput = document.getElementById('chainSearch');
+                searchInput.addEventListener('input', debounce((e) => {
+                    this.searchQuery = e.target.value.trim();
+                    this.handleSearch();
+                }, 300));
+
+                // Wallet connection changes
+                if (window.ethereum) {
+                    window.ethereum.on('accountsChanged', async (accounts) => {
+                        this.walletAddress = accounts[0] || null;
+                        this.renderPopularChains();
+                        this.renderChainGroups();
+                    });
+
+                    window.ethereum.on('chainChanged', () => {
+                        window.location.reload();
+                    });
+                }
+            },
+
+            handleSearch() {
+                // Render filtered results
+                this.renderChainGroups();
+
+                // Show/hide popular chains
+                const popularSection = document.getElementById('popularChains');
+                popularSection.style.display = this.searchQuery ? 'none' : 'block';
+
+                // Show/hide empty state
+                const hasResults = this.chains.some(chain => this.matchesSearch(chain));
+                const emptyState = document.getElementById('emptyState');
+                emptyState.classList.toggle('hidden', hasResults);
+            }
+        };
+
+        /* ====================================================================
+           INITIALIZE ON PAGE LOAD
+           ================================================================== */
+
+        document.addEventListener('DOMContentLoaded', () => {
+            ChainSelector.init();
+        });
+
+        // Listen for chain selection (for testing)
+        document.addEventListener('chainSelected', (event) => {
+            console.log('✅ Chain selection event received:', event.detail);
+        });
+    </script>
+</body>
+</html>

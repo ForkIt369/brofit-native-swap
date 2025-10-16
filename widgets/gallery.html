@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BroFit Widget Gallery | Multi-Chain DeFi Widgets</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="./shared/styles.css">
+
+    <style>
+        /* ====================================================================
+           GALLERY SPECIFIC STYLES
+           ================================================================== */
+
+        .gallery-container {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            padding: var(--space-3xl) var(--space-lg);
+            text-align: center;
+            color: white;
+            margin-bottom: var(--space-3xl);
+        }
+
+        .hero-title {
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            font-family: var(--font-sans);
+            margin-bottom: var(--space-md);
+        }
+
+        .hero-subtitle {
+            font-size: var(--font-size-xl);
+            opacity: 0.9;
+            margin-bottom: var(--space-lg);
+        }
+
+        .hero-description {
+            font-size: var(--font-size-md);
+            opacity: 0.8;
+            max-width: 800px;
+            margin: 0 auto var(--space-xl);
+            line-height: var(--line-height-relaxed);
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-3xl);
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .hero-stat-value {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            font-family: var(--font-mono);
+        }
+
+        .hero-stat-label {
+            font-size: var(--font-size-sm);
+            opacity: 0.8;
+        }
+
+        /* Main Content */
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-lg) var(--space-3xl);
+        }
+
+        .section {
+            margin-bottom: var(--space-3xl);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .section-title {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .section-description {
+            font-size: var(--font-size-md);
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Widget Grid */
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: var(--space-xl);
+        }
+
+        /* Widget Card */
+        .widget-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-xl);
+            backdrop-filter: blur(var(--glass-blur));
+            transition: all var(--transition-base);
+        }
+
+        .widget-card:hover {
+            border-color: var(--primary-green);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .widget-header {
+            display: flex;
+            align-items: start;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .widget-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .widget-info {
+            flex: 1;
+        }
+
+        .widget-name {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .widget-tagline {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .widget-description {
+            font-size: var(--font-size-md);
+            color: var(--text-secondary);
+            line-height: var(--line-height-relaxed);
+            margin-bottom: var(--space-lg);
+        }
+
+        .widget-features {
+            list-style: none;
+            margin-bottom: var(--space-lg);
+        }
+
+        .widget-features li {
+            padding: var(--space-sm) 0;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .widget-features li::before {
+            content: '✓';
+            color: var(--primary-green);
+            font-weight: var(--font-weight-bold);
+            font-size: 18px;
+        }
+
+        .widget-actions {
+            display: flex;
+            gap: var(--space-md);
+        }
+
+        /* Feature Comparison Table */
+        .comparison-table {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            backdrop-filter: blur(var(--glass-blur));
+            overflow-x: auto;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            text-align: left;
+            padding: var(--space-md);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--glass-border);
+        }
+
+        .comparison-table td {
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .check-icon {
+            color: var(--primary-green);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            margin: var(--space-lg) 0;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--glass-border);
+            padding: var(--space-3xl) var(--space-lg);
+            text-align: center;
+            margin-top: var(--space-3xl);
+        }
+
+        .footer-title {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-description {
+            font-size: var(--font-size-md);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xl);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-xl);
+            margin-bottom: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: var(--font-weight-semibold);
+            transition: color var(--transition-base);
+        }
+
+        .footer-link:hover {
+            color: var(--primary-green-light);
+        }
+
+        .footer-copyright {
+            font-size: var(--font-size-sm);
+            color: var(--text-tertiary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .widgets-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-title {
+                font-size: var(--font-size-2xl);
+            }
+
+            .hero-subtitle {
+                font-size: var(--font-size-lg);
+            }
+
+            .hero-stats {
+                gap: var(--space-xl);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gallery-container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1 class="hero-title">🚀 BroFit Widget System v2.0</h1>
+            <p class="hero-subtitle">Multi-Chain DeFi Widgets for Every Need</p>
+            <p class="hero-description">
+                A comprehensive suite of modular, production-ready widgets for decentralized finance.
+                Built with BroHub Design System v1.0, powered by RocketX API, supporting 180+ chains.
+            </p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">5</div>
+                    <div class="hero-stat-label">Widgets</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">180+</div>
+                    <div class="hero-stat-label">Networks</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">5000+</div>
+                    <div class="hero-stat-label">Tokens</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">80%</div>
+                    <div class="hero-stat-label">API Coverage</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Widget Showcase -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Widget Showcase</h2>
+                    <p class="section-description">
+                        Five production-ready widgets covering the complete DeFi workflow from chain selection to transaction history
+                    </p>
+                </div>
+
+                <div class="widgets-grid">
+                    <!-- ChainSelector Widget -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <div class="widget-icon">⛓️</div>
+                            <div class="widget-info">
+                                <div class="widget-name">ChainSelector</div>
+                                <div class="widget-tagline">Foundation Widget</div>
+                            </div>
+                        </div>
+                        <p class="widget-description">
+                            Enable users to select from 180+ supported blockchain networks with search, filtering, and balance display.
+                        </p>
+                        <ul class="widget-features">
+                            <li>180+ chain support (L1, L2, Sidechains)</li>
+                            <li>Real-time search and filtering</li>
+                            <li>Balance display per chain</li>
+                            <li>CustomEvent emission for integration</li>
+                            <li>Popular chains quick access</li>
+                        </ul>
+                        <div class="widget-actions">
+                            <a href="./chain-selector.html" class="btn btn-primary">View Widget</a>
+                            <button class="btn btn-secondary" onclick="showIntegrationCode('chain')">Get Code</button>
+                        </div>
+                    </div>
+
+                    <!-- Swap Widget -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <div class="widget-icon">🔄</div>
+                            <div class="widget-info">
+                                <div class="widget-name">Swap Widget</div>
+                                <div class="widget-tagline">Same-Chain Trading</div>
+                            </div>
+                        </div>
+                        <p class="widget-description">
+                            Execute instant token swaps on the same blockchain with real-time quotes from 10+ DEX aggregators.
+                        </p>
+                        <ul class="widget-features">
+                            <li>240+ token support per chain</li>
+                            <li>Real-time quotes from DEX aggregators</li>
+                            <li>Price impact calculation</li>
+                            <li>Slippage tolerance control</li>
+                            <li>MetaMask integration</li>
+                        </ul>
+                        <div class="widget-actions">
+                            <a href="../index.html" class="btn btn-primary">View Widget</a>
+                            <button class="btn btn-secondary" onclick="showIntegrationCode('swap')">Get Code</button>
+                        </div>
+                    </div>
+
+                    <!-- Bridge Widget -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <div class="widget-icon">🌉</div>
+                            <div class="widget-info">
+                                <div class="widget-name">Bridge Widget</div>
+                                <div class="widget-tagline">Cross-Chain Transfers</div>
+                            </div>
+                        </div>
+                        <p class="widget-description">
+                            Transfer tokens across different blockchain networks with multi-stage progress tracking and bridge protocol selection.
+                        </p>
+                        <ul class="widget-features">
+                            <li>Cross-chain token transfers</li>
+                            <li>3-stage progress tracking</li>
+                            <li>Multiple bridge protocols</li>
+                            <li>Time estimates (5-20 min)</li>
+                            <li>Dual gas fee estimation</li>
+                        </ul>
+                        <div class="widget-actions">
+                            <a href="./bridge.html" class="btn btn-primary">View Widget</a>
+                            <button class="btn btn-secondary" onclick="showIntegrationCode('bridge')">Get Code</button>
+                        </div>
+                    </div>
+
+                    <!-- Portfolio Dashboard -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <div class="widget-icon">💼</div>
+                            <div class="widget-info">
+                                <div class="widget-name">Portfolio Dashboard</div>
+                                <div class="widget-tagline">Multi-Chain Overview</div>
+                            </div>
+                        </div>
+                        <p class="widget-description">
+                            Comprehensive view of all assets across multiple blockchain networks with performance tracking and analytics.
+                        </p>
+                        <ul class="widget-features">
+                            <li>Total portfolio value aggregation</li>
+                            <li>Chain breakdown visualization</li>
+                            <li>Token holdings table</li>
+                            <li>24h/7d/30d performance</li>
+                            <li>CSV export functionality</li>
+                        </ul>
+                        <div class="widget-actions">
+                            <a href="./portfolio.html" class="btn btn-primary">View Widget</a>
+                            <button class="btn btn-secondary" onclick="showIntegrationCode('portfolio')">Get Code</button>
+                        </div>
+                    </div>
+
+                    <!-- Transaction History -->
+                    <div class="widget-card">
+                        <div class="widget-header">
+                            <div class="widget-icon">📜</div>
+                            <div class="widget-info">
+                                <div class="widget-name">Transaction History</div>
+                                <div class="widget-tagline">Activity Log</div>
+                            </div>
+                        </div>
+                        <p class="widget-description">
+                            Complete transaction history with advanced filtering, search, and detailed transaction inspection.
+                        </p>
+                        <ul class="widget-features">
+                            <li>Swap & bridge transaction log</li>
+                            <li>Advanced filters (chain, type, status)</li>
+                            <li>Transaction hash search</li>
+                            <li>Detailed transaction modal</li>
+                            <li>CSV export functionality</li>
+                        </ul>
+                        <div class="widget-actions">
+                            <a href="./history.html" class="btn btn-primary">View Widget</a>
+                            <button class="btn btn-secondary" onclick="showIntegrationCode('history')">Get Code</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature Comparison -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Feature Comparison</h2>
+                    <p class="section-description">
+                        Complete feature matrix showing capabilities across all widgets
+                    </p>
+                </div>
+
+                <div class="comparison-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>ChainSelector</th>
+                                <th>Swap</th>
+                                <th>Bridge</th>
+                                <th>Portfolio</th>
+                                <th>History</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Multi-Chain Support</td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td>—</td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                            </tr>
+                            <tr>
+                                <td>Real-time Quotes</td>
+                                <td>—</td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td>—</td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td>Balance Display</td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td>Transaction Execution</td>
+                                <td>—</td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td>—</td>
+                                <td>—</td>
+                            </tr>
+                            <tr>
+                                <td>Search & Filter</td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td>—</td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                            </tr>
+                            <tr>
+                                <td>Export to CSV</td>
+                                <td>—</td>
+                                <td>—</td>
+                                <td>—</td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                            </tr>
+                            <tr>
+                                <td>Responsive Design</td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                            </tr>
+                            <tr>
+                                <td>MetaMask Integration</td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td><span class="check-icon">✓</span></td>
+                                <td>—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Technical Specs -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Technical Specifications</h2>
+                    <p class="section-description">
+                        Built with modern web technologies and best practices
+                    </p>
+                </div>
+
+                <div class="widgets-grid">
+                    <div class="glass-card">
+                        <h3 style="color: var(--text-primary); margin-bottom: var(--space-md);">🎨 Design System</h3>
+                        <ul style="list-style: none; color: var(--text-secondary);">
+                            <li>✓ BroHub Design System v1.0</li>
+                            <li>✓ CBO Green theme (#3EB85F)</li>
+                            <li>✓ Glassmorphism effects</li>
+                            <li>✓ 8px spacing grid</li>
+                            <li>✓ 6 responsive breakpoints</li>
+                            <li>✓ OKLCH color system</li>
+                        </ul>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3 style="color: var(--text-primary); margin-bottom: var(--space-md);">⚡ Performance</h3>
+                        <ul style="list-style: none; color: var(--text-secondary);">
+                            <li>✓ Vanilla JavaScript (no frameworks)</li>
+                            <li>✓ < 50KB per widget</li>
+                            <li>✓ 30s API response caching</li>
+                            <li>✓ Lighthouse score: A (92/100)</li>
+                            <li>✓ Mobile-first responsive</li>
+                            <li>✓ Progressive enhancement</li>
+                        </ul>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3 style="color: var(--text-primary); margin-bottom: var(--space-md);">🔐 Security</h3>
+                        <ul style="list-style: none; color: var(--text-secondary);">
+                            <li>✓ Input validation & sanitization</li>
+                            <li>✓ XSS protection</li>
+                            <li>✓ No private key storage</li>
+                            <li>✓ Transaction confirmation UI</li>
+                            <li>✓ Gas fee warnings</li>
+                            <li>✓ Bridge safety notices</li>
+                        </ul>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3 style="color: var(--text-primary); margin-bottom: var(--space-md);">🔌 Integration</h3>
+                        <ul style="list-style: none; color: var(--text-secondary);">
+                            <li>✓ RocketX API (80% coverage)</li>
+                            <li>✓ MetaMask Web3 provider</li>
+                            <li>✓ CustomEvent communication</li>
+                            <li>✓ localStorage state management</li>
+                            <li>✓ Modular architecture</li>
+                            <li>✓ Standalone or embedded</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h2 class="footer-title">Ready to Build?</h2>
+            <p class="footer-description">
+                Start integrating BroFit widgets into your DeFi application today
+            </p>
+            <div class="footer-links">
+                <a href="../README.md" class="footer-link">Documentation</a>
+                <a href="./WIDGET-ARCHITECTURE.md" class="footer-link">Architecture Guide</a>
+                <a href="https://github.com" class="footer-link">GitHub</a>
+                <a href="https://brofit-swap.vercel.app" class="footer-link">Live Demo</a>
+            </div>
+            <div class="footer-copyright">
+                Built with 💪 by the BroFit team | Powered by RocketX API | v2.0.0-prototype
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared Utilities -->
+    <script src="./shared/utils.js"></script>
+
+    <script>
+        function showIntegrationCode(widget) {
+            const codes = {
+                chain: `<!-- ChainSelector Integration -->
+<div id="chainSelector"></div>
+<script src="widgets/chain-selector.html"></script>
+
+// Listen for chain selection
+document.addEventListener('chainSelected', (event) => {
+    console.log('Selected chain:', event.detail);
+});`,
+                swap: `<!-- Swap Widget Integration -->
+<div id="swapWidget"></div>
+<script src="widgets/swap.html"></script>
+
+// Widget automatically handles wallet connection
+// and transaction execution`,
+                bridge: `<!-- Bridge Widget Integration -->
+<div id="bridgeWidget"></div>
+<script src="widgets/bridge.html"></script>
+
+// Widget handles cross-chain transfers
+// with 3-stage progress tracking`,
+                portfolio: `<!-- Portfolio Dashboard Integration -->
+<div id="portfolio"></div>
+<script src="widgets/portfolio.html"></script>
+
+// Aggregates balances across all chains
+// and displays portfolio analytics`,
+                history: `<!-- Transaction History Integration -->
+<div id="history"></div>
+<script src="widgets/history.html"></script>
+
+// Displays swap and bridge transaction log
+// with advanced filtering and search`
+            };
+
+            alert(`Integration Code:\n\n${codes[widget]}\n\nCopy this code to integrate the widget into your application.`);
+        }
+    </script>
+</body>
+</html>

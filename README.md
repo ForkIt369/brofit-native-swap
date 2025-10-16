@@ -1,24 +1,64 @@
-# 💪 BroFit Native Swap
+# 💪 BroFit Multi-Chain DeFi Platform
 
-A fully functional decentralized token swap interface powered by RocketX API with native BroFit branding.
+A comprehensive suite of decentralized finance widgets powered by RocketX API, supporting 180+ blockchain networks.
 
-![BroFit Swap](https://img.shields.io/badge/Status-Production%20Ready-green)
+![BroFit](https://img.shields.io/badge/Status-Production%20Ready-green)
 ![RocketX](https://img.shields.io/badge/Powered%20by-RocketX%20API-blue)
 ![Web3](https://img.shields.io/badge/Web3-MetaMask-orange)
+![Widgets](https://img.shields.io/badge/Widgets-5%20Ready-brightgreen)
+![Networks](https://img.shields.io/badge/Networks-180%2B-blue)
 
-## 🚀 Live Demo
+## 🚀 Live Demos
 
-**Production:** [https://brofit-swap.vercel.app](https://brofit-swap.vercel.app)
+**Widget Gallery:** [https://brofit-swap.vercel.app/widgets/gallery.html](https://brofit-swap.vercel.app/widgets/gallery.html)
 
-## ✨ Features
+**Individual Widgets:**
+- 🔄 [Swap Widget](https://brofit-swap.vercel.app/) - Same-chain token swaps
+- ⛓️ [ChainSelector](https://brofit-swap.vercel.app/widgets/chain-selector.html) - 180+ network selector
+- 🌉 [Bridge Widget](https://brofit-swap.vercel.app/widgets/bridge.html) - Cross-chain transfers
+- 💼 [Portfolio Dashboard](https://brofit-swap.vercel.app/widgets/portfolio.html) - Multi-chain overview
+- 📜 [Transaction History](https://brofit-swap.vercel.app/widgets/history.html) - Activity log
 
-### 🎯 Core Functionality
+## ✨ Widget System v2.0
+
+### 🎯 Five Production-Ready Widgets
+
+#### ⛓️ ChainSelector Widget
+- **180+ Blockchain Networks**: L1, L2, and Sidechain support
+- **Search & Filter**: Real-time chain discovery
+- **Balance Display**: Multi-chain balance aggregation
+- **Quick Access**: Popular chains grid
+- **Integration**: CustomEvent emission for seamless integration
+
+#### 🔄 Swap Widget (Original)
 - **240+ Tokens**: Full Ethereum token list from RocketX API
 - **Real-time Quotes**: Live swap quotes from 10+ DEX aggregators
 - **Token Search**: Instant search and filter by symbol, name, or address
 - **Best Routes**: Automatic route optimization via VELORA, Uniswap, and more
 - **Price Impact**: Real-time price impact calculation
 - **Network Fees**: Accurate gas fee estimates in USD
+
+#### 🌉 Bridge Widget (NEW)
+- **Cross-Chain Transfers**: Move tokens between 180+ networks
+- **3-Stage Tracking**: Lock → Relay → Mint progress visualization
+- **Time Estimates**: 5-20 minute transfer times
+- **Bridge Protocols**: Stargate, LayerZero, Wormhole, Axelar
+- **Dual Gas Fees**: Source and destination gas estimation
+- **Safety Warnings**: Clear risk communication
+
+#### 💼 Portfolio Dashboard (NEW)
+- **Multi-Chain Aggregation**: Total value across all networks
+- **Chain Breakdown**: Visual distribution by network
+- **Holdings Table**: Comprehensive token list with search/filter
+- **Performance Tracking**: 24h/7d/30d/All-time metrics
+- **CSV Export**: Download portfolio data
+
+#### 📜 Transaction History (NEW)
+- **Activity Log**: All swaps and bridge transactions
+- **Advanced Filters**: Chain, type, status filtering
+- **Transaction Details**: Complete transaction inspection
+- **Hash Search**: Find transactions by hash
+- **CSV Export**: Download transaction history
 
 ### 🔐 Web3 Integration
 - **MetaMask Support**: Native wallet connection
@@ -64,12 +104,26 @@ Blockchain:   Ethereum mainnet
 
 ```
 brofit-native-swap/
-├── index.html              # Main swap interface
-├── gallery.html            # Gallery page
-├── approach-4-wrapper.html # Wrapper demo
-├── README.md               # This file
-├── vercel.json            # Vercel configuration
-└── .gitignore             # Git ignore rules
+├── index.html                      # Main swap interface (v1.3.0)
+├── gallery.html                    # Original token gallery
+├── approach-4-wrapper.html         # Wrapper demo
+├── README.md                       # This file
+├── vercel.json                     # Vercel configuration
+├── .gitignore                      # Git ignore rules
+├── WIDGET-ARCHITECTURE.md          # Complete widget architecture (38 KB)
+├── WIDGETS-SUMMARY.md              # Implementation summary (36 KB)
+│
+└── widgets/                        # Widget System v2.0
+    ├── shared/
+    │   ├── styles.css             # BroHub Design System v1.0
+    │   ├── utils.js               # Web3 helpers & formatting
+    │   └── rocketx-api.js         # Centralized API wrapper
+    │
+    ├── chain-selector.html        # 180+ chain selector widget
+    ├── bridge.html                # Cross-chain transfer widget
+    ├── portfolio.html             # Multi-chain portfolio dashboard
+    ├── history.html               # Transaction history widget
+    └── gallery.html               # Widget showcase & documentation
 ```
 
 ## 🚀 Deployment
@@ -151,14 +205,29 @@ open http://localhost:8000
 - Some tokens may have low liquidity
 - Gas fees can be high during network congestion
 
-## 🛣️ Roadmap
+## 📈 Development Progress
 
-- [ ] Multi-chain support (Polygon, Arbitrum, Optimism)
-- [ ] Token portfolio tracking
-- [ ] Transaction history
-- [ ] Price charts integration
+### ✅ Completed (v2.0.0)
+- [x] Multi-chain support (180+ networks via ChainSelector)
+- [x] Token portfolio tracking (Portfolio Dashboard widget)
+- [x] Transaction history (History widget)
+- [x] Cross-chain bridge (Bridge widget)
+- [x] Modular widget architecture
+- [x] BroHub Design System v1.0 implementation
+- [x] Comprehensive documentation
+
+### 🚧 In Progress
+- [ ] Real Web3 balance fetching (currently mock data)
+- [ ] RocketX Bridge API integration (simulation complete)
+- [ ] Backend proxy for API key security
+- [ ] Transaction persistence (Supabase)
+
+### 🔮 Future Roadmap
+- [ ] Price charts integration (TradingView)
 - [ ] Limit orders
-- [ ] Swap analytics dashboard
+- [ ] Multi-wallet support (WalletConnect, Coinbase)
+- [ ] Analytics dashboard
+- [ ] Mobile app (React Native)
 
 ## 📝 License
 

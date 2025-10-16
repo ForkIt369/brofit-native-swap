@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Bridge Widget | BroFit</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="./shared/styles.css">
+
+    <style>
+        /* ====================================================================
+           BRIDGE WIDGET SPECIFIC STYLES
+           ================================================================== */
+
+        .bridge-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+
+        /* Bridge Card */
+        .bridge-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            backdrop-filter: blur(var(--glass-blur));
+            margin-bottom: var(--space-lg);
+        }
+
+        /* Network Section */
+        .network-section {
+            margin-bottom: var(--space-lg);
+        }
+
+        .network-header {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .network-selector-row {
+            display: flex;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .network-selector,
+        .token-selector {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .network-selector:hover,
+        .token-selector:hover {
+            border-color: var(--primary-green);
+            background: rgba(62, 184, 95, 0.05);
+        }
+
+        .network-icon,
+        .token-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--font-weight-bold);
+            color: white;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .selector-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .selector-name {
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+        }
+
+        .selector-symbol {
+            font-size: var(--font-size-sm);
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+        }
+
+        /* Amount Input */
+        .amount-section {
+            margin-bottom: var(--space-md);
+        }
+
+        .amount-input-group {
+            position: relative;
+        }
+
+        .amount-input {
+            width: 100%;
+            padding: var(--space-lg);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+            border: 2px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-base);
+        }
+
+        .amount-input:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 4px var(--primary-green-glow);
+        }
+
+        .balance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--space-sm);
+            font-size: var(--font-size-sm);
+        }
+
+        .balance-label {
+            color: var(--text-tertiary);
+        }
+
+        .balance-value {
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .max-button {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            transition: all var(--transition-base);
+            margin-left: var(--space-sm);
+        }
+
+        .max-button:hover {
+            background: var(--primary-green-light);
+        }
+
+        /* Bridge Direction Arrow */
+        .bridge-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: var(--space-lg) 0;
+            position: relative;
+        }
+
+        .bridge-arrow-icon {
+            font-size: 32px;
+            color: var(--primary-green);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        /* Bridge Details */
+        .bridge-details {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .details-title {
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-sm) 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+
+        .detail-divider {
+            height: 1px;
+            background: var(--glass-border);
+            margin: var(--space-md) 0;
+        }
+
+        .total-row {
+            margin-top: var(--space-md);
+            padding-top: var(--space-md);
+            border-top: 2px solid var(--glass-border);
+        }
+
+        .total-row .detail-label {
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+        }
+
+        .total-row .detail-value {
+            font-size: var(--font-size-lg);
+            color: var(--primary-green);
+        }
+
+        /* Warning Banner */
+        .warning-banner {
+            background: rgba(255, 214, 10, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .warning-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-semibold);
+            color: var(--warning);
+        }
+
+        .warning-list {
+            list-style: none;
+            padding-left: 28px;
+        }
+
+        .warning-list li {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xs);
+            position: relative;
+        }
+
+        .warning-list li::before {
+            content: '•';
+            position: absolute;
+            left: -12px;
+            color: var(--warning);
+        }
+
+        /* Bridge Progress */
+        .bridge-progress {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-lg);
+        }
+
+        .progress-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-lg);
+            text-align: center;
+        }
+
+        .progress-stages {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        .progress-stage {
+            display: flex;
+            gap: var(--space-md);
+        }
+
+        .stage-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            transition: all var(--transition-base);
+        }
+
+        .stage-indicator.completed {
+            background: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+
+        .stage-indicator.active {
+            background: var(--glass-bg);
+            border-color: var(--primary-green);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .stage-info {
+            flex: 1;
+        }
+
+        .stage-title {
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stage-description {
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .stage-time {
+            font-size: var(--font-size-xs);
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+            margin-top: var(--space-xs);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .bridge-container {
+                padding: var(--space-md);
+            }
+
+            .bridge-card {
+                padding: var(--space-lg);
+            }
+
+            .amount-input {
+                font-size: var(--font-size-xl);
+            }
+        }
+
+        @media (max-width: 414px) {
+            .network-selector-row {
+                flex-direction: column;
+            }
+
+            .amount-input {
+                font-size: var(--font-size-lg);
+                padding: var(--space-md);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bridge-container">
+        <!-- Header -->
+        <div class="widget-header">
+            <h1 class="widget-title">🌉 Cross-Chain Bridge</h1>
+            <p class="widget-description">Transfer tokens across different blockchain networks</p>
+        </div>
+
+        <!-- Bridge Card -->
+        <div class="bridge-card">
+            <!-- From Network -->
+            <div class="network-section">
+                <div class="network-header">From Network</div>
+                <div class="network-selector-row">
+                    <div class="network-selector" id="fromNetwork">
+                        <div class="network-icon">ETH</div>
+                        <div class="selector-info">
+                            <div class="selector-name">Ethereum</div>
+                            <div class="selector-symbol">Chain ID: 1</div>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                    <div class="token-selector" id="fromToken">
+                        <div class="token-icon">ETH</div>
+                        <div class="selector-info">
+                            <div class="selector-name">ETH</div>
+                            <div class="selector-symbol">Ethereum</div>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                </div>
+
+                <!-- Amount Input -->
+                <div class="amount-section">
+                    <input
+                        type="text"
+                        id="bridgeAmount"
+                        class="amount-input"
+                        placeholder="0.0"
+                        inputmode="decimal"
+                    >
+                    <div class="balance-row">
+                        <span class="balance-label">Balance: <span class="balance-value" id="fromBalance">2.5 ETH</span></span>
+                        <button class="max-button" id="maxButton">MAX</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bridge Arrow -->
+            <div class="bridge-arrow">
+                <div class="bridge-arrow-icon">⬇</div>
+            </div>
+
+            <!-- To Network -->
+            <div class="network-section">
+                <div class="network-header">To Network</div>
+                <div class="network-selector-row">
+                    <div class="network-selector" id="toNetwork">
+                        <div class="network-icon">POL</div>
+                        <div class="selector-info">
+                            <div class="selector-name">Polygon</div>
+                            <div class="selector-symbol">Chain ID: 137</div>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                    <div class="token-selector" id="toToken">
+                        <div class="token-icon">WETH</div>
+                        <div class="selector-info">
+                            <div class="selector-name">WETH</div>
+                            <div class="selector-symbol">Wrapped Ether</div>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                </div>
+
+                <!-- Expected Amount -->
+                <div class="balance-row">
+                    <span class="balance-label">You will receive:</span>
+                    <span class="balance-value" id="expectedAmount">~0.998 WETH</span>
+                </div>
+                <div class="balance-row">
+                    <span class="balance-label">Estimated arrival:</span>
+                    <span class="balance-value" id="estimatedTime">5-15 minutes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bridge Details -->
+        <div class="bridge-details" id="bridgeDetails" style="display: none;">
+            <div class="details-title">📊 Bridge Details</div>
+
+            <div class="detail-row">
+                <span class="detail-label">Bridge Protocol</span>
+                <span class="detail-value">Stargate Finance</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Source Chain Gas</span>
+                <span class="detail-value" id="sourceGas">~$15.00</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Bridge Fee</span>
+                <span class="detail-value" id="bridgeFee">~$2.50</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Destination Gas</span>
+                <span class="detail-value" id="destGas">~$0.05</span>
+            </div>
+
+            <div class="total-row detail-row">
+                <span class="detail-label">Total Cost</span>
+                <span class="detail-value" id="totalCost">~$17.55</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">You Receive</span>
+                <span class="detail-value" id="youReceive">~$4,982.45</span>
+            </div>
+        </div>
+
+        <!-- Warning Banner -->
+        <div class="warning-banner">
+            <div class="warning-header">
+                ⚠️ Bridge Safety Notice
+            </div>
+            <ul class="warning-list">
+                <li>Funds are locked during the bridge transfer (5-15 minutes)</li>
+                <li>Bridge transactions cannot be canceled once started</li>
+                <li>Verify destination address carefully before confirming</li>
+                <li>Bridge fees may vary based on network congestion</li>
+            </ul>
+        </div>
+
+        <!-- Bridge Button -->
+        <button class="btn btn-primary btn-lg w-full" id="bridgeButton" disabled>
+            Enter Amount to Bridge
+        </button>
+
+        <!-- Bridge Progress (hidden initially) -->
+        <div class="bridge-progress hidden" id="bridgeProgress">
+            <div class="progress-title">Bridge in Progress</div>
+            <div class="progress-stages">
+                <!-- Stage 1 -->
+                <div class="progress-stage">
+                    <div class="stage-indicator completed" id="stage1">✅</div>
+                    <div class="stage-info">
+                        <div class="stage-title">Stage 1: Lock on Ethereum</div>
+                        <div class="stage-description">Tokens locked in source chain contract</div>
+                        <div class="stage-time">Confirmed in block 19234567</div>
+                    </div>
+                </div>
+
+                <!-- Stage 2 -->
+                <div class="progress-stage">
+                    <div class="stage-indicator active" id="stage2">⏳</div>
+                    <div class="stage-info">
+                        <div class="stage-title">Stage 2: Bridge Protocol Relay</div>
+                        <div class="stage-description">Cross-chain message being relayed...</div>
+                        <div class="stage-time">Estimated 8 minutes remaining</div>
+                    </div>
+                </div>
+
+                <!-- Stage 3 -->
+                <div class="progress-stage">
+                    <div class="stage-indicator" id="stage3">⏸️</div>
+                    <div class="stage-info">
+                        <div class="stage-title">Stage 3: Mint on Polygon</div>
+                        <div class="stage-description">Waiting for Stage 2 completion...</div>
+                        <div class="stage-time">Pending</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared Utilities -->
+    <script src="./shared/utils.js"></script>
+    <script src="./shared/rocketx-api.js"></script>
+
+    <!-- Bridge Logic -->
+    <script>
+        /* ====================================================================
+           BRIDGE STATE & CONFIGURATION
+           ================================================================== */
+
+        const Bridge = {
+            // State
+            fromChain: { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', chain_id: 1 },
+            toChain: { id: 'polygon', name: 'Polygon', symbol: 'MATIC', chain_id: 137 },
+            fromToken: null,
+            toToken: null,
+            amount: '',
+            walletAddress: null,
+            bridgeQuote: null,
+            bridgeTxId: null,
+
+            // Bridge protocols
+            protocols: [
+                'Stargate Finance',
+                'LayerZero',
+                'Wormhole',
+                'Axelar'
+            ],
+
+            /* ================================================================
+               INITIALIZATION
+               ============================================================== */
+
+            async init() {
+                console.log('🌉 Initializing Bridge...');
+
+                // Check wallet
+                this.walletAddress = await getWalletAddress();
+
+                // Setup event listeners
+                this.setupEventListeners();
+
+                // Load initial data
+                await this.loadChainData();
+
+                console.log('✅ Bridge initialized');
+            },
+
+            /* ================================================================
+               EVENT LISTENERS
+               ============================================================== */
+
+            setupEventListeners() {
+                // Amount input
+                const amountInput = document.getElementById('bridgeAmount');
+                amountInput.addEventListener('input', debounce(() => {
+                    this.amount = amountInput.value;
+                    this.handleAmountChange();
+                }, 500));
+
+                // MAX button
+                document.getElementById('maxButton').addEventListener('click', () => {
+                    this.setMaxAmount();
+                });
+
+                // Bridge button
+                document.getElementById('bridgeButton').addEventListener('click', () => {
+                    this.executeBridge();
+                });
+
+                // Network selectors
+                document.getElementById('fromNetwork').addEventListener('click', () => {
+                    this.openChainSelector('from');
+                });
+
+                document.getElementById('toNetwork').addEventListener('click', () => {
+                    this.openChainSelector('to');
+                });
+
+                // Token selectors
+                document.getElementById('fromToken').addEventListener('click', () => {
+                    this.openTokenSelector('from');
+                });
+
+                document.getElementById('toToken').addEventListener('click', () => {
+                    this.openTokenSelector('to');
+                });
+
+                // Listen for chain selection events
+                document.addEventListener('chainSelected', (event) => {
+                    this.handleChainSelected(event.detail);
+                });
+            },
+
+            /* ================================================================
+               DATA LOADING
+               ============================================================== */
+
+            async loadChainData() {
+                // Load default tokens for Ethereum and Polygon
+                try {
+                    const ethTokens = await rocketxAPI.getTokens('ethereum');
+                    const polygonTokens = await rocketxAPI.getTokens('polygon');
+
+                    this.fromToken = ethTokens[0];
+                    this.toToken = polygonTokens.find(t => t.symbol === 'WETH') || polygonTokens[0];
+
+                    console.log('Loaded tokens:', this.fromToken, this.toToken);
+                } catch (error) {
+                    console.error('Failed to load tokens:', error);
+                }
+            },
+
+            /* ================================================================
+               AMOUNT HANDLING
+               ============================================================== */
+
+            handleAmountChange() {
+                const button = document.getElementById('bridgeButton');
+
+                if (!this.amount || parseFloat(this.amount) <= 0) {
+                    button.disabled = true;
+                    button.textContent = 'Enter Amount to Bridge';
+                    document.getElementById('bridgeDetails').style.display = 'none';
+                    return;
+                }
+
+                if (!this.walletAddress) {
+                    button.disabled = true;
+                    button.textContent = 'Connect Wallet';
+                    return;
+                }
+
+                // Enable bridge and fetch quote
+                button.disabled = false;
+                button.textContent = `Bridge ${this.amount} ${this.fromToken?.symbol || 'ETH'}`;
+
+                this.fetchBridgeQuote();
+            },
+
+            setMaxAmount() {
+                // Mock max balance (would fetch from wallet in production)
+                const maxBalance = '2.5';
+                document.getElementById('bridgeAmount').value = maxBalance;
+                this.amount = maxBalance;
+                this.handleAmountChange();
+            },
+
+            /* ================================================================
+               BRIDGE QUOTE
+               ============================================================== */
+
+            async fetchBridgeQuote() {
+                try {
+                    // Show loading state
+                    document.getElementById('expectedAmount').textContent = 'Loading...';
+
+                    // Fetch quote from RocketX
+                    // Note: This endpoint may not exist yet, using mock data
+                    const quote = await this.getMockBridgeQuote();
+
+                    this.bridgeQuote = quote;
+
+                    // Update UI
+                    document.getElementById('expectedAmount').textContent = `~${quote.outputAmount} ${this.toToken?.symbol || 'WETH'}`;
+                    document.getElementById('estimatedTime').textContent = quote.estimatedTime;
+
+                    // Show details
+                    document.getElementById('bridgeDetails').style.display = 'block';
+                    document.getElementById('sourceGas').textContent = quote.sourceGas;
+                    document.getElementById('bridgeFee').textContent = quote.bridgeFee;
+                    document.getElementById('destGas').textContent = quote.destGas;
+                    document.getElementById('totalCost').textContent = quote.totalCost;
+                    document.getElementById('youReceive').textContent = quote.youReceive;
+
+                } catch (error) {
+                    console.error('Failed to fetch bridge quote:', error);
+                    showNotification('Failed to fetch quote', 'error');
+                }
+            },
+
+            getMockBridgeQuote() {
+                // Mock bridge quote (would use RocketX API in production)
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const amount = parseFloat(this.amount);
+                        const outputAmount = (amount * 0.998).toFixed(4);
+                        const valueUSD = amount * 2000;
+
+                        resolve({
+                            outputAmount,
+                            estimatedTime: '5-15 minutes',
+                            sourceGas: '$15.00',
+                            bridgeFee: '$2.50',
+                            destGas: '$0.05',
+                            totalCost: '$17.55',
+                            youReceive: `$${(valueUSD - 17.55).toFixed(2)}`,
+                            protocol: 'Stargate Finance'
+                        });
+                    }, 1000);
+                });
+            },
+
+            /* ================================================================
+               BRIDGE EXECUTION
+               ============================================================== */
+
+            async executeBridge() {
+                if (!this.walletAddress) {
+                    showNotification('Please connect your wallet', 'warning');
+                    return;
+                }
+
+                try {
+                    showNotification('Initiating bridge transaction...', 'info');
+
+                    // Hide bridge card, show progress
+                    document.querySelector('.bridge-card').style.display = 'none';
+                    document.getElementById('bridgeDetails').style.display = 'none';
+                    document.querySelector('.warning-banner').style.display = 'none';
+                    document.getElementById('bridgeButton').style.display = 'none';
+                    document.getElementById('bridgeProgress').classList.remove('hidden');
+
+                    // Simulate bridge execution (would use RocketX API + Web3 in production)
+                    await this.simulateBridge();
+
+                } catch (error) {
+                    console.error('Bridge failed:', error);
+                    showNotification(parseWeb3Error(error), 'error');
+                }
+            },
+
+            async simulateBridge() {
+                // Stage 1: Lock on source chain
+                await this.updateStage(1, 'active');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                await this.updateStage(1, 'completed');
+
+                // Stage 2: Bridge relay
+                await this.updateStage(2, 'active');
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                await this.updateStage(2, 'completed');
+
+                // Stage 3: Mint on destination
+                await this.updateStage(3, 'active');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                await this.updateStage(3, 'completed');
+
+                showNotification('Bridge complete! Tokens received on Polygon', 'success');
+
+                // Save to transaction history
+                rocketxAPI.saveTransactionLocal(this.walletAddress, {
+                    type: 'bridge',
+                    fromChain: this.fromChain.name,
+                    toChain: this.toChain.name,
+                    fromAmount: this.amount,
+                    toAmount: this.bridgeQuote?.outputAmount,
+                    status: 'completed',
+                    timestamp: Date.now()
+                });
+            },
+
+            async updateStage(stageNum, status) {
+                const indicator = document.getElementById(`stage${stageNum}`);
+                indicator.className = `stage-indicator ${status}`;
+
+                if (status === 'completed') {
+                    indicator.textContent = '✅';
+                } else if (status === 'active') {
+                    indicator.textContent = '⏳';
+                }
+            },
+
+            /* ================================================================
+               CHAIN & TOKEN SELECTION
+               ============================================================== */
+
+            openChainSelector(direction) {
+                showNotification(`Opening chain selector for ${direction} network`, 'info');
+                // Would open chain selector modal in production
+                // For prototype, just show notification
+            },
+
+            openTokenSelector(direction) {
+                showNotification(`Opening token selector for ${direction} token`, 'info');
+                // Would open token selector modal in production
+            },
+
+            handleChainSelected(chainData) {
+                console.log('Chain selected for bridge:', chainData);
+                // Update from/to chain based on which selector was opened
+            }
+        };
+
+        /* ====================================================================
+           INITIALIZE ON PAGE LOAD
+           ================================================================== */
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Bridge.init();
+        });
+    </script>
+</body>
+</html>
