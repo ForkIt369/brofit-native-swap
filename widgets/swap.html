@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Swap Widget | BroFit</title>
+
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="./shared/styles.css">
+
+    <style>
+        /* ====================================================================
+           SWAP WIDGET SPECIFIC STYLES
+           ================================================================== */
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .swap-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+
+        /* RocketX Widget Container */
+        .rocketx-widget-container {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: var(--space-lg);
+            overflow-y: auto;
+        }
+
+        #rocketx-widget {
+            width: 100%;
+            max-width: 480px;
+            min-height: 600px;
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Loading State */
+        .loading-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--glass-border);
+            border-top-color: var(--primary-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto var(--space-md);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: var(--font-size-md);
+            font-weight: var(--font-weight-medium);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .rocketx-widget-container {
+                padding: var(--space-md);
+            }
+
+            #rocketx-widget {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .rocketx-widget-container {
+                padding: var(--space-sm);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="swap-container">
+        <!-- Loading State -->
+        <div class="loading-state" id="loadingState">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading RocketX Widget...</div>
+        </div>
+
+        <!-- RocketX Widget -->
+        <div class="rocketx-widget-container" style="display: none;" id="widgetContainer">
+            <div id="rocketx-widget"></div>
+        </div>
+    </div>
+
+    <!-- Shared Utilities -->
+    <script src="./shared/utils.js"></script>
+    <script src="./shared/rocketx-api.js"></script>
+
+    <!-- RocketX Widget Integration -->
+    <script>
+        /* ====================================================================
+           ROCKETX WIDGET INITIALIZATION
+           ================================================================== */
+
+        const SwapWidget = {
+            walletAddress: null,
+
+            async init() {
+                console.log('🔄 Initializing Swap Widget...');
+
+                // Check wallet connection
+                this.walletAddress = await getWalletAddress();
+                console.log('Wallet address:', this.walletAddress || 'Not connected');
+
+                // Initialize RocketX widget
+                this.initializeRocketXWidget();
+
+                console.log('✅ Swap widget initialized');
+            },
+
+            initializeRocketXWidget() {
+                try {
+                    // Configuration for RocketX widget
+                    const config = {
+                        targetDivId: 'rocketx-widget',
+                        address: this.walletAddress || '',
+                        theme: 'dark',
+                        referrer: 'brofit',
+
+                        // Theming to match BroHub design
+                        customization: {
+                            primaryColor: '#3EB85F',
+                            backgroundColor: '#0A0A0A',
+                            borderRadius: '12px',
+                            fontFamily: 'Inter, sans-serif'
+                        },
+
+                        // Default chains
+                        defaultFromChain: 'ethereum',
+                        defaultToChain: 'polygon',
+
+                        // Callbacks
+                        onSwapSuccess: (txData) => {
+                            console.log('Swap successful:', txData);
+                            this.handleSwapSuccess(txData);
+                        },
+                        onSwapError: (error) => {
+                            console.error('Swap failed:', error);
+                            showNotification(parseWeb3Error(error), 'error');
+                        }
+                    };
+
+                    // Initialize RocketX widget
+                    if (typeof RocketX !== 'undefined') {
+                        RocketX.init(config);
+                        this.showWidget();
+                    } else {
+                        // Load RocketX SDK dynamically
+                        this.loadRocketXSDK(config);
+                    }
+
+                } catch (error) {
+                    console.error('Failed to initialize RocketX widget:', error);
+                    document.getElementById('loadingState').innerHTML = `
+                        <div class="error-state">
+                            <p>Failed to load swap widget</p>
+                            <p style="font-size: 14px; color: var(--text-tertiary); margin-top: 8px;">
+                                ${error.message}
+                            </p>
+                        </div>
+                    `;
+                }
+            },
+
+            loadRocketXSDK(config) {
+                // Load RocketX SDK script
+                const script = document.createElement('script');
+                script.src = 'https://widget.rocketx.exchange/widget.js';
+                script.async = true;
+
+                script.onload = () => {
+                    console.log('✅ RocketX SDK loaded');
+                    if (typeof RocketX !== 'undefined') {
+                        RocketX.init(config);
+                        this.showWidget();
+                    }
+                };
+
+                script.onerror = () => {
+                    console.error('❌ Failed to load RocketX SDK');
+                    document.getElementById('loadingState').innerHTML = `
+                        <div class="error-state">
+                            <p>Failed to load swap widget</p>
+                            <p style="font-size: 14px; color: var(--text-tertiary); margin-top: 8px;">
+                                Could not connect to RocketX service
+                            </p>
+                        </div>
+                    `;
+                };
+
+                document.head.appendChild(script);
+            },
+
+            showWidget() {
+                // Hide loading, show widget
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('widgetContainer').style.display = 'flex';
+            },
+
+            handleSwapSuccess(txData) {
+                // Show success notification
+                showNotification('Swap successful!', 'success');
+
+                // Save transaction to history
+                if (this.walletAddress && typeof rocketxAPI !== 'undefined') {
+                    rocketxAPI.saveTransactionLocal(this.walletAddress, {
+                        type: 'swap',
+                        fromChain: txData.fromChain,
+                        toChain: txData.toChain,
+                        fromToken: txData.fromToken,
+                        toToken: txData.toToken,
+                        fromAmount: txData.fromAmount,
+                        toAmount: txData.toAmount,
+                        txHash: txData.txHash,
+                        status: 'completed',
+                        timestamp: Date.now()
+                    });
+                }
+
+                // Dispatch event for parent dashboard to update portfolio
+                window.parent.postMessage({
+                    type: 'swap_completed',
+                    data: txData
+                }, '*');
+            }
+        };
+
+        /* ====================================================================
+           INITIALIZE ON PAGE LOAD
+           ================================================================== */
+
+        document.addEventListener('DOMContentLoaded', () => {
+            SwapWidget.init();
+        });
+
+        // Listen for wallet connection changes from parent dashboard
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'wallet_connected') {
+                SwapWidget.walletAddress = event.data.address;
+                console.log('Wallet connected:', event.data.address);
+
+                // Reinitialize widget with new wallet
+                if (typeof RocketX !== 'undefined' && RocketX.updateWallet) {
+                    RocketX.updateWallet(event.data.address);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
