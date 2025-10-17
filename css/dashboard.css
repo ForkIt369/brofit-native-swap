@@ -477,7 +477,6 @@
     margin: 0 auto 16px;
     opacity: 0.95;
     object-fit: contain;
-    mix-blend-mode: multiply;
 }
 
 .loading-avatar {
