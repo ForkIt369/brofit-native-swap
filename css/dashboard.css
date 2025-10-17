@@ -43,6 +43,27 @@
     line-height: 1;
 }
 
+.logo-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid var(--accent-primary);
+    box-shadow: 0 2px 8px rgba(62, 184, 95, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.logo-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(62, 184, 95, 0.5);
+}
+
+.logo-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .brand-text {
     display: flex;
     flex-direction: column;

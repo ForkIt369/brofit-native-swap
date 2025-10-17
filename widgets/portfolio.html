@@ -560,6 +560,72 @@
             lastUpdated: null,
 
             /* ================================================================
+               TOKEN ICON HELPER
+               ============================================================== */
+
+            /**
+             * Get token logo URL with multiple fallback sources
+             */
+            getTokenLogoUrl(token, chain, contractAddress) {
+                // Prioritized list of logo sources
+                const sources = [];
+
+                // 1. Moralis logo (if available)
+                if (token.logo) {
+                    sources.push(token.logo);
+                }
+                if (token.thumbnail) {
+                    sources.push(token.thumbnail);
+                }
+
+                // 2. TrustWallet Assets Repository
+                if (contractAddress && chain) {
+                    const chainMap = {
+                        'eth': 'ethereum',
+                        'polygon': 'polygon',
+                        'bsc': 'smartchain',
+                        'arbitrum': 'arbitrum',
+                        'optimism': 'optimism',
+                        'avalanche': 'avalanchec'
+                    };
+                    const trustwalletChain = chainMap[chain];
+                    if (trustwalletChain) {
+                        sources.push(`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/${trustwalletChain}/assets/${contractAddress}/logo.png`);
+                    }
+                }
+
+                // 3. CoinGecko alternative (for major tokens)
+                if (token.symbol) {
+                    const symbol = token.symbol.toLowerCase();
+                    sources.push(`https://assets.coingecko.com/coins/images/${this.getCoinGeckoId(symbol)}/small/${symbol}.png`);
+                }
+
+                return sources;
+            },
+
+            /**
+             * Get CoinGecko ID for major tokens
+             */
+            getCoinGeckoId(symbol) {
+                const ids = {
+                    'eth': 279,
+                    'weth': 2396,
+                    'usdc': 6319,
+                    'usdt': 325,
+                    'dai': 9791,
+                    'wbtc': 3717,
+                    'matic': 4713,
+                    'bnb': 1839,
+                    'link': 1975,
+                    'uni': 7083,
+                    'aave': 8922,
+                    'crv': 12124,
+                    'snx': 2586
+                };
+                return ids[symbol] || 1; // Default to Bitcoin ID if not found
+            },
+
+            /* ================================================================
                INITIALIZATION
                ============================================================== */
 
@@ -969,11 +1035,23 @@
                 filtered.forEach(holding => {
                     const row = document.createElement('tr');
 
-                    // Create token icon HTML - use logo if available, otherwise fallback to abbreviation
-                    const tokenIconHtml = holding.logo ?
-                        `<img src="${holding.logo}" class="token-icon-large" onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';" style="border-radius: 50%;">
-                         <div class="token-icon-large" style="display:none;">${holding.token.slice(0, 3)}</div>` :
-                        `<div class="token-icon-large">${holding.token.slice(0, 3)}</div>`;
+                    // Get multiple logo sources with fallbacks
+                    const logoSources = this.getTokenLogoUrl(
+                        { logo: holding.logo, symbol: holding.token },
+                        holding.chain,
+                        holding.contractAddress
+                    );
+
+                    // Create cascading fallback images + final text fallback
+                    let tokenIconHtml = '';
+                    logoSources.forEach((src, i) => {
+                        const isLast = i === logoSources.length - 1;
+                        tokenIconHtml += `<img src="${src}"
+                                              class="token-icon-large"
+                                              style="border-radius: 50%; ${i > 0 ? 'display:none;' : ''}"
+                                              onerror="this.style.display='none'; ${!isLast ? 'this.nextElementSibling.style.display=\'flex\';' : 'this.parentElement.querySelector(\'.token-icon-fallback\').style.display=\'flex\';'}">`;
+                    });
+                    tokenIconHtml += `<div class="token-icon-large token-icon-fallback" style="display:none;">${holding.token.slice(0, 3)}</div>`;
 
                     row.innerHTML = `
                         <td>
