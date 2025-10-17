@@ -171,7 +171,7 @@
     max-width: 1920px;
     width: 100%;
     margin: 0 auto;
-    padding: 32px;
+    padding: 48px 40px; /* 8px grid: 6 units vertical, 5 units horizontal */
 }
 
 .widget-container {
@@ -195,7 +195,7 @@
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
+    gap: 32px; /* 8px grid: 4 units for more breathing room */
     max-width: 1400px;
     margin: 0 auto;
 }
@@ -204,12 +204,12 @@
 .dashboard-card {
     background: var(--surface-1);
     border: 1px solid var(--border-primary);
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: 16px; /* Increased from 12px for softer feel */
+    padding: 32px; /* 8px grid: 4 units - more generous padding */
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    transition: box-shadow 0.2s ease;
+    gap: 20px; /* Increased internal spacing */
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .dashboard-card:hover {
@@ -250,9 +250,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px;
+    padding: 24px; /* 8px grid: 3 units for better prominence */
     background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
-    border-radius: 12px;
+    border-radius: 16px; /* Consistent with card style */
 }
 
 .total-value {
@@ -301,7 +301,7 @@
 
 .summary-stats {
     display: flex;
-    gap: 16px;
+    gap: 20px; /* 8px grid: 2.5 units for visual separation */
 }
 
 .stat-item {
@@ -309,9 +309,9 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 16px;
+    padding: 20px; /* 8px grid: 2.5 units for comfortable stats display */
     background: var(--surface-2);
-    border-radius: 8px;
+    border-radius: 12px; /* Consistent with other cards */
     border: 1px solid var(--border-primary);
 }
 
@@ -331,17 +331,17 @@
 .quick-actions {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px; /* 8px grid: 2 units for more breathing room */
 }
 
 .action-btn {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 16px;
+    padding: 20px; /* 8px grid: 2.5 units - more comfortable padding */
     background: var(--surface-2);
     border: 1px solid var(--border-primary);
-    border-radius: 8px;
+    border-radius: 12px; /* Increased for consistency with card style */
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
@@ -455,7 +455,7 @@
 /* Empty States */
 .empty-state {
     text-align: center;
-    padding: 40px 20px;
+    padding: 56px 32px; /* 8px grid: 7 units vertical, 4 units horizontal - more spacious */
     color: var(--text-tertiary);
 }
 
