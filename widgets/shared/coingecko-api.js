@@ -518,3 +518,33 @@ if (typeof module !== 'undefined' && module.exports) {
         getCoinGeckoCacheStats
     };
 }
+
+// Browser global exposure (for <script> tag usage)
+if (typeof window !== 'undefined') {
+    // Configuration
+    window.COINGECKO_CONFIG = COINGECKO_CONFIG;
+
+    // Search
+    window.getCoinsList = getCoinsList;
+    window.searchCoinBySymbol = searchCoinBySymbol;
+    window.searchCoinByAddress = searchCoinByAddress;
+
+    // Coin data
+    window.getCoinData = getCoinData;
+    window.getCoinLogo = getCoinLogo;
+
+    // Prices
+    window.getSimplePrice = getSimplePrice;
+    window.getTokenPrice_CoinGecko = getTokenPrice;
+
+    // High-level helpers
+    window.getTokenInfo = getTokenInfo;
+    window.getTokenInfoByAddress = getTokenInfoByAddress;
+    window.batchGetTokenLogos = batchGetTokenLogos;
+
+    // Cache
+    window.clearCoinGeckoCache = clearCoinGeckoCache;
+    window.getCoinGeckoCacheStats = getCoinGeckoCacheStats;
+
+    console.log('✅ CoinGecko API loaded and globally accessible');
+}

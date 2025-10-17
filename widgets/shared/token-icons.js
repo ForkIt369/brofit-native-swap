@@ -402,3 +402,17 @@ if (typeof module !== 'undefined' && module.exports) {
         cacheIcon
     };
 }
+
+// Browser global exposure (for <script> tag usage)
+if (typeof window !== 'undefined') {
+    window.getTokenIcon = getTokenIcon;
+    window.preloadTokenIcons = preloadTokenIcons;
+    window.generatePlaceholder = generatePlaceholder;
+    window.clearIconCache = clearIconCache;
+    window.getIconCacheStats = getIconCacheStats;
+    window.getCachedIcon = getCachedIcon;
+    window.cacheIcon = cacheIcon;
+    window.getTrustWalletUrl = getTrustWalletUrl;
+
+    console.log('✅ Token Icons API loaded and globally accessible');
+}

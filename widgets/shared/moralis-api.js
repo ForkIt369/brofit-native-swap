@@ -528,3 +528,41 @@ if (typeof module !== 'undefined' && module.exports) {
         getMoralisCacheStats
     };
 }
+
+// Browser global exposure (for <script> tag usage)
+if (typeof window !== 'undefined') {
+    // Configuration
+    window.MORALIS_CONFIG = MORALIS_CONFIG;
+
+    // Wallet tokens
+    window.getWalletTokens = getWalletTokens;
+    window.getMultiChainTokens = getMultiChainTokens;
+
+    // Native balances
+    window.getNativeBalance = getNativeBalance;
+    window.getMultiChainNativeBalances = getMultiChainNativeBalances;
+
+    // Token metadata
+    window.getTokenMetadata = getTokenMetadata;
+
+    // Token prices
+    window.getTokenPrice = getTokenPrice;
+    window.getMultipleTokenPrices = getMultipleTokenPrices;
+
+    // NFTs
+    window.getWalletNFTs = getWalletNFTs;
+
+    // Transactions
+    window.getWalletTransactions = getWalletTransactions;
+    window.getTokenTransfers = getTokenTransfers;
+
+    // High-level helpers
+    window.getCompletePortfolio = getCompletePortfolio;
+    window.getPortfolioSummary = getPortfolioSummary;
+
+    // Cache
+    window.clearMoralisCache = clearMoralisCache;
+    window.getMoralisCacheStats = getMoralisCacheStats;
+
+    console.log('✅ Moralis API loaded and globally accessible');
+}

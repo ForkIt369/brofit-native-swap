@@ -360,6 +360,18 @@ class DashboardController {
     }
 
     /**
+     * Timeout wrapper for promises
+     */
+    withTimeout(promise, timeoutMs, errorMessage) {
+        return Promise.race([
+            promise,
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error(errorMessage)), timeoutMs)
+            )
+        ]);
+    }
+
+    /**
      * Load portfolio data from Moralis (using new API wrapper)
      */
     async loadPortfolioData(address) {
@@ -368,10 +380,24 @@ class DashboardController {
         // Show loading overlay with CBO avatar
         this.showLoadingState('Loading your portfolio from blockchain...');
 
+        console.log('🔍 Starting portfolio load for address:', address);
+        console.log('🔍 Checking if getMultiChainTokens is available:', typeof getMultiChainTokens);
+
         try {
-            // Use the new Moralis API wrapper for cleaner code
+            // Verify function exists
+            if (typeof getMultiChainTokens !== 'function') {
+                throw new Error('getMultiChainTokens is not defined. API modules may not be loaded.');
+            }
+
+            // Use the new Moralis API wrapper with timeout protection (60 seconds)
             console.log('📡 Fetching portfolio via Moralis API wrapper...');
-            const allTokens = await getMultiChainTokens(address);
+            const allTokens = await this.withTimeout(
+                getMultiChainTokens(address),
+                60000, // 60 second timeout
+                'Portfolio loading timed out after 60 seconds'
+            );
+
+            console.log(`📊 Received ${allTokens.length} tokens from API`);
 
             // Transform and filter tokens
             const holdings = allTokens
@@ -392,6 +418,8 @@ class DashboardController {
                 }))
                 .sort((a, b) => b.value - a.value);
 
+            console.log(`✅ Filtered to ${holdings.length} valid holdings`);
+
             // Calculate portfolio stats
             const totalValue = holdings.reduce((sum, h) => sum + h.value, 0);
             const totalChange24h = holdings.reduce((sum, h) => sum + (h.value * h.change24h / 100), 0);
@@ -406,12 +434,19 @@ class DashboardController {
                 totalAssets: holdings.length
             });
 
-            console.log(`✅ Portfolio loaded: ${holdings.length} tokens across ${activeChains} chains`);
+            console.log(`✅ Portfolio loaded: ${holdings.length} tokens across ${activeChains} chains, $${totalValue.toFixed(2)} total value`);
 
             // Hide loading overlay
             this.hideLoadingState();
         } catch (error) {
             console.error('❌ Failed to load portfolio:', error);
+            console.error('❌ Error details:', {
+                message: error.message,
+                stack: error.stack,
+                address: address,
+                getMultiChainTokensAvailable: typeof getMultiChainTokens !== 'undefined'
+            });
+
             window.stateManager.setPortfolio({
                 holdings: [],
                 totalValue: 0,
@@ -421,8 +456,9 @@ class DashboardController {
             });
 
             // Show error state with CBO avatar
-            this.showErrorState('Failed to load portfolio data');
+            this.showErrorState(error.message || 'Failed to load portfolio data');
         } finally {
+            console.log('🏁 Portfolio load complete, hiding loading state');
             window.stateManager.setPortfolioLoading(false);
         }
     }
