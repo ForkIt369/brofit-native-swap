@@ -866,10 +866,24 @@
                 const selector = document.querySelector(`#${direction}Network .network-icon`);
                 if (!selector) return;
 
+                const iconUrl = getChainIconUrl(chain);
                 const symbolText = (chain.symbol || chain.name).substring(0, 3).toUpperCase();
 
-                // Chains typically don't have icon URLs, use text
-                selector.innerHTML = `<span class="icon-text">${symbolText}</span>`;
+                // Try to load image first
+                if (iconUrl) {
+                    const img = new Image();
+                    img.onload = () => {
+                        selector.innerHTML = `<img src="${iconUrl}" alt="${chain.name}" style="width: 100%; height: 100%; object-fit: contain;" />`;
+                    };
+                    img.onerror = () => {
+                        // Fallback to text
+                        selector.innerHTML = `<span class="icon-text">${symbolText}</span>`;
+                    };
+                    img.src = iconUrl;
+                } else {
+                    // No icon URL available, use text
+                    selector.innerHTML = `<span class="icon-text">${symbolText}</span>`;
+                }
             },
 
             /**
@@ -1002,12 +1016,21 @@
                 }
 
                 chainList.innerHTML = this.filteredChains.map(chain => {
+                    const iconUrl = getChainIconUrl(chain);
                     const symbolText = (chain.symbol || chain.name).substring(0, 3).toUpperCase();
 
                     return `
                         <div class="list-item" data-chain='${JSON.stringify(chain).replace(/'/g, '&apos;')}'>
                             <div class="list-icon">
-                                <span class="icon-text">${symbolText}</span>
+                                ${iconUrl ?
+                                    `<img
+                                        src="${iconUrl}"
+                                        alt="${chain.name}"
+                                        onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=&quot;icon-text&quot;>${symbolText}</span>';"
+                                        style="width: 100%; height: 100%; object-fit: contain;"
+                                    />` :
+                                    `<span class="icon-text">${symbolText}</span>`
+                                }
                             </div>
                             <div class="list-info">
                                 <div class="list-name">${chain.name}</div>

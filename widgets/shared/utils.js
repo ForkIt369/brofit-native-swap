@@ -327,30 +327,149 @@ function isPositiveNumber(value) {
    ========================================================================== */
 
 /**
+ * Get chain icon URL with multi-tier fallback
+ */
+function getChainIconUrl(chain) {
+    const chainId = chain.chain_id || chain.id;
+    const symbol = (chain.symbol || chain.name).toLowerCase();
+
+    // Chain logo mapping for major chains
+    const chainLogos = {
+        // Ethereum
+        'eth': 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+        'ethereum': 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+        '1': 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+
+        // Polygon
+        'matic': 'https://cryptologos.cc/logos/polygon-matic-logo.png',
+        'polygon': 'https://cryptologos.cc/logos/polygon-matic-logo.png',
+        '137': 'https://cryptologos.cc/logos/polygon-matic-logo.png',
+
+        // BNB Chain
+        'bnb': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
+        'bsc': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
+        '56': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
+
+        // Arbitrum
+        'arbitrum': 'https://cryptologos.cc/logos/arbitrum-arb-logo.png',
+        '42161': 'https://cryptologos.cc/logos/arbitrum-arb-logo.png',
+
+        // Optimism
+        'optimism': 'https://cryptologos.cc/logos/optimism-ethereum-op-logo.png',
+        '10': 'https://cryptologos.cc/logos/optimism-ethereum-op-logo.png',
+
+        // Avalanche
+        'avax': 'https://cryptologos.cc/logos/avalanche-avax-logo.png',
+        'avalanche': 'https://cryptologos.cc/logos/avalanche-avax-logo.png',
+        '43114': 'https://cryptologos.cc/logos/avalanche-avax-logo.png',
+
+        // Fantom
+        'ftm': 'https://cryptologos.cc/logos/fantom-ftm-logo.png',
+        'fantom': 'https://cryptologos.cc/logos/fantom-ftm-logo.png',
+        '250': 'https://cryptologos.cc/logos/fantom-ftm-logo.png',
+
+        // Gnosis
+        'xdai': 'https://cryptologos.cc/logos/gnosis-gno-gno-logo.png',
+        'gnosis': 'https://cryptologos.cc/logos/gnosis-gno-gno-logo.png',
+        '100': 'https://cryptologos.cc/logos/gnosis-gno-gno-logo.png',
+
+        // Moonbeam
+        'glmr': 'https://assets.coingecko.com/coins/images/22459/small/glmr.png',
+        'moonbeam': 'https://assets.coingecko.com/coins/images/22459/small/glmr.png',
+        '1284': 'https://assets.coingecko.com/coins/images/22459/small/glmr.png',
+
+        // Moonriver
+        'movr': 'https://assets.coingecko.com/coins/images/17984/small/9285.png',
+        'moonriver': 'https://assets.coingecko.com/coins/images/17984/small/9285.png',
+        '1285': 'https://assets.coingecko.com/coins/images/17984/small/9285.png'
+    };
+
+    // Try by chain ID first
+    if (chainId && chainLogos[String(chainId)]) {
+        return chainLogos[String(chainId)];
+    }
+
+    // Try by symbol
+    if (chainLogos[symbol]) {
+        return chainLogos[symbol];
+    }
+
+    // Try by name
+    if (chain.name && chainLogos[chain.name.toLowerCase()]) {
+        return chainLogos[chain.name.toLowerCase()];
+    }
+
+    // Fallback: return null so caller can use text fallback
+    return null;
+}
+
+/**
  * Get token icon URL with multi-tier fallback
  */
 function getTokenIconUrl(token) {
     const address = token.address || token.contract_address;
-    const symbol = token.symbol;
+    const symbol = (token.symbol || '').toUpperCase();
     const networkId = token.network_id || 'ethereum';
 
-    // Priority 1: RocketX CDN
+    // Priority 1: RocketX CDN logo_uri
     if (token.logo_uri || token.logoURI) {
         return token.logo_uri || token.logoURI;
     }
 
-    // Priority 2: Trust Wallet
-    if (address && networkId === 'ethereum') {
-        return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${address}/logo.png`;
+    // Priority 2: Known native tokens (no address)
+    if (!address || address === '0x0000000000000000000000000000000000000000') {
+        const nativeTokens = {
+            'ETH': 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+            'BNB': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
+            'MATIC': 'https://cryptologos.cc/logos/polygon-matic-logo.png',
+            'AVAX': 'https://cryptologos.cc/logos/avalanche-avax-logo.png',
+            'FTM': 'https://cryptologos.cc/logos/fantom-ftm-logo.png',
+            'xDAI': 'https://cryptologos.cc/logos/gnosis-gno-gno-logo.png',
+            'GLMR': 'https://assets.coingecko.com/coins/images/22459/small/glmr.png',
+            'MOVR': 'https://assets.coingecko.com/coins/images/17984/small/9285.png'
+        };
+
+        if (nativeTokens[symbol]) {
+            return nativeTokens[symbol];
+        }
     }
 
-    // Priority 3: CoinGecko
+    // Priority 3: Trust Wallet (for Ethereum ERC20 tokens with address)
+    if (address && address !== '0x0000000000000000000000000000000000000000') {
+        // Map network IDs to Trust Wallet blockchain names
+        const trustWalletNetworks = {
+            'ethereum': 'ethereum',
+            'bsc': 'smartchain',
+            'polygon': 'polygon',
+            'avalanche': 'avalanchec'
+        };
+
+        const twNetwork = trustWalletNetworks[networkId] || 'ethereum';
+        return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/${twNetwork}/assets/${address}/logo.png`;
+    }
+
+    // Priority 4: CoinGecko API (fixed URL)
     if (symbol) {
-        return `https://assets.coingecko.com/coins/images/1/small/${symbol.toLowerCase()}.png`;
+        // Common token ID mappings for CoinGecko
+        const geckoIds = {
+            'WETH': 'weth',
+            'USDT': 'tether',
+            'USDC': 'usd-coin',
+            'DAI': 'dai',
+            'WBTC': 'wrapped-bitcoin',
+            'UNI': 'uniswap',
+            'LINK': 'chainlink',
+            'AAVE': 'aave',
+            'MATIC': 'matic-network',
+            'BNB': 'binancecoin'
+        };
+
+        const tokenId = geckoIds[symbol] || symbol.toLowerCase();
+        return `https://assets.coingecko.com/coins/images/1/small/${tokenId}.png`;
     }
 
     // Fallback: Generate placeholder
-    return generateTokenPlaceholder(symbol);
+    return generateTokenPlaceholder(symbol || '?');
 }
 
 /**
@@ -625,8 +744,9 @@ if (typeof module !== 'undefined' && module.exports) {
         isValidNumber,
         isPositiveNumber,
 
-        // Token icons
+        // Token & Chain icons
         getTokenIconUrl,
+        getChainIconUrl,
         generateTokenPlaceholder,
 
         // Storage
