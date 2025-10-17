@@ -578,7 +578,7 @@ class RocketXAPI {
    ========================================================================== */
 
 // API key (⚠️ SECURITY WARNING: In production, use backend proxy)
-const API_KEY = 'b8c17e35-9de5-49a0-8a62-b5fea1dc61a9';
+const API_KEY = '25de7b8a-5dbd-41d5-a9a5-e865462268a0'; // Updated Oct 17, 2025 - User's API key
 
 // Create singleton instance
 const rocketxAPI = new RocketXAPI(API_KEY);
