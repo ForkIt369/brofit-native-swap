@@ -81,12 +81,12 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            background: var(--bg-tertiary);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: var(--font-weight-bold);
-            color: white;
+            color: var(--text-secondary);
             font-size: 14px;
             flex-shrink: 0;
             overflow: hidden;
@@ -425,12 +425,12 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-dark));
+            background: var(--bg-tertiary);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: var(--font-weight-bold);
-            color: white;
+            color: var(--text-secondary);
             font-size: 14px;
             flex-shrink: 0;
             overflow: hidden;
@@ -739,6 +739,12 @@
 
                 // Update UI
                 this.updateWalletUI();
+
+                // Render initial chain and token icons
+                this.updateChainIcon('from', this.fromChain);
+                this.updateChainIcon('to', this.toChain);
+                this.updateTokenIcon('from', this.fromToken);
+                this.updateTokenIcon('to', this.toToken);
 
                 // Pre-load chains for faster modal opening
                 this.preloadChains();
