@@ -470,6 +470,74 @@
     color: var(--text-quaternary);
 }
 
+/* CBO Avatar Styles */
+.empty-state-avatar {
+    width: 140px;
+    height: auto;
+    margin: 0 auto 16px;
+    opacity: 0.95;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+}
+
+.loading-avatar {
+    width: 80px;
+    height: auto;
+    margin: 0 auto 12px;
+    display: block;
+}
+
+.success-avatar {
+    width: 120px;
+    height: auto;
+    margin: 0 auto 16px;
+    display: block;
+}
+
+.error-avatar {
+    width: 110px;
+    height: auto;
+    margin: 0 auto 16px;
+    opacity: 0.9;
+}
+
+/* Avatar Animations */
+@keyframes gentle-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.animate-bounce {
+    animation: gentle-bounce 2s ease-in-out infinite;
+}
+
+@keyframes celebrate {
+    0% { transform: scale(0.8) rotate(-3deg); opacity: 0; }
+    50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.animate-celebrate {
+    animation: celebrate 0.6s ease-out forwards;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fade-in 0.3s ease-out;
+}
+
+/* Responsive Avatar Sizing */
+@media (max-width: 768px) {
+    .empty-state-avatar { width: 120px; }
+    .loading-avatar { width: 60px; }
+    .success-avatar { width: 100px; }
+    .error-avatar { width: 90px; }
+}
+
 /* FOOTER */
 .dashboard-footer {
     background: var(--surface-1);
