@@ -360,51 +360,18 @@ class DashboardController {
     }
 
     /**
-     * Load portfolio data from Moralis
+     * Load portfolio data from Moralis (using new API wrapper)
      */
     async loadPortfolioData(address) {
-        // Use Moralis configuration from portfolio widget
-        const MORALIS_CONFIG = {
-            apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjMxNjI2NjUyLTBkZWYtNGU2Yy04YmNlLWNmZDhjN2NkMTM4NiIsIm9yZ0lkIjoiNDI4NDQ1IiwidXNlcklkIjoiNDQwODg3IiwidHlwZUlkIjoiNDBlZTQ5ZjItMmVhZC00ZDFlLTg3NzAtY2E2MGU3YTU3YWU3IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3Mzc4MDAxMDAsImV4cCI6NDg5MzU2MDEwMH0.nWPT_KjvzZ4XBMH93wdWMGMQaBXBuAEvzGg-gPxxSSQ',
-            baseUrl: 'https://deep-index.moralis.io/api/v2.2',
-            supportedChains: ['eth', 'polygon', 'bsc', 'arbitrum', 'optimism', 'avalanche']
-        };
-
         window.stateManager.setPortfolioLoading(true);
 
+        // Show loading overlay with CBO avatar
+        this.showLoadingState('Loading your portfolio from blockchain...');
+
         try {
-            const allTokens = [];
-
-            // Fetch tokens from each chain
-            for (const chain of MORALIS_CONFIG.supportedChains) {
-                try {
-                    const response = await fetch(
-                        `${MORALIS_CONFIG.baseUrl}/wallets/${address}/tokens?chain=${chain}`,
-                        {
-                            method: 'GET',
-                            headers: {
-                                'accept': 'application/json',
-                                'X-API-Key': MORALIS_CONFIG.apiKey
-                            }
-                        }
-                    );
-
-                    if (!response.ok) {
-                        console.warn(`⚠️ ${chain} API error: ${response.status}`);
-                        continue;
-                    }
-
-                    const data = await response.json();
-                    const tokens = (data.result || []).map(token => ({
-                        ...token,
-                        chain: chain
-                    }));
-
-                    allTokens.push(...tokens);
-                } catch (chainError) {
-                    console.error(`❌ Error fetching ${chain}:`, chainError);
-                }
-            }
+            // Use the new Moralis API wrapper for cleaner code
+            console.log('📡 Fetching portfolio via Moralis API wrapper...');
+            const allTokens = await getMultiChainTokens(address);
 
             // Transform and filter tokens
             const holdings = allTokens
@@ -425,16 +392,130 @@ class DashboardController {
                 }))
                 .sort((a, b) => b.value - a.value);
 
-            // Update state manager
-            window.stateManager.setPortfolio(holdings);
+            // Calculate portfolio stats
+            const totalValue = holdings.reduce((sum, h) => sum + h.value, 0);
+            const totalChange24h = holdings.reduce((sum, h) => sum + (h.value * h.change24h / 100), 0);
+            const activeChains = [...new Set(holdings.map(h => h.chain))].length;
 
-            console.log(`✅ Portfolio loaded: ${holdings.length} tokens`);
+            // Update state manager
+            window.stateManager.setPortfolio({
+                holdings,
+                totalValue,
+                change24h: totalValue > 0 ? (totalChange24h / totalValue * 100) : 0,
+                activeChains,
+                totalAssets: holdings.length
+            });
+
+            console.log(`✅ Portfolio loaded: ${holdings.length} tokens across ${activeChains} chains`);
+
+            // Hide loading overlay
+            this.hideLoadingState();
         } catch (error) {
             console.error('❌ Failed to load portfolio:', error);
-            window.stateManager.setPortfolio([]);
+            window.stateManager.setPortfolio({
+                holdings: [],
+                totalValue: 0,
+                change24h: 0,
+                activeChains: 0,
+                totalAssets: 0
+            });
+
+            // Show error state with CBO avatar
+            this.showErrorState('Failed to load portfolio data');
         } finally {
             window.stateManager.setPortfolioLoading(false);
         }
+    }
+
+    /**
+     * Show loading state with CBO avatar
+     */
+    showLoadingState(message = 'Loading...') {
+        let overlay = document.getElementById('loadingOverlay');
+
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(18, 20, 30, 0.95);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                backdrop-filter: blur(8px);
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        overlay.innerHTML = `
+            <img src="/avatars/cbo/cbo_processing_watch.png?v=2"
+                 alt="CBO Processing"
+                 style="width: 180px; height: auto; margin-bottom: 24px; animation: pulse 2s ease-in-out infinite;">
+            <div style="color: white; font-size: 18px; font-weight: 600; text-align: center; max-width: 400px;">
+                ${message}
+            </div>
+        `;
+        overlay.style.display = 'flex';
+    }
+
+    /**
+     * Hide loading state
+     */
+    hideLoadingState() {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+    }
+
+    /**
+     * Show error state with CBO avatar
+     */
+    showErrorState(message) {
+        let overlay = document.getElementById('loadingOverlay');
+
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(18, 20, 30, 0.95);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-center;
+                z-index: 10000;
+                backdrop-filter: blur(8px);
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        overlay.innerHTML = `
+            <img src="/avatars/cbo/cbo_cautious_reviewing.png?v=2"
+                 alt="CBO Error"
+                 style="width: 180px; height: auto; margin-bottom: 24px;">
+            <div style="color: #ef4444; font-size: 18px; font-weight: 600; text-align: center; max-width: 400px; margin-bottom: 16px;">
+                ${message}
+            </div>
+            <button onclick="window.dashboardController.hideLoadingState()"
+                    style="padding: 12px 24px; background: #3EB85F; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                Close
+            </button>
+        `;
+        overlay.style.display = 'flex';
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => this.hideLoadingState(), 5000);
     }
 
     /**

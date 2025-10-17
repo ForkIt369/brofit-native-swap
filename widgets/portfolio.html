@@ -539,18 +539,16 @@
     <script src="./shared/utils.js"></script>
     <script src="./shared/rocketx-api.js"></script>
 
+    <!-- API Integrations -->
+    <script src="./shared/token-icons.js"></script>
+    <script src="./shared/coingecko-api.js"></script>
+    <script src="./shared/moralis-api.js"></script>
+
     <!-- Portfolio Logic -->
     <script>
         /* ====================================================================
            PORTFOLIO STATE & CONFIGURATION
            ================================================================== */
-
-        // Moralis API Configuration
-        const MORALIS_CONFIG = {
-            apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjM3MmE3NmNkLTRkZmYtNGI2OC05NTRiLWQwNWZiZTlmNTgzYyIsIm9yZ0lkIjoiNDQ3MzE4IiwidXNlcklkIjoiNDYwMjM2IiwidHlwZUlkIjoiYjFjY2Y1OWUtN2M3Mi00YjdlLWJkNTEtMjQzNmRmZDg2OTc2IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3NDczNTM2MDMsImV4cCI6NDkwMzExMzYwM30.d03rGvyBobwlLHYpGJcnnd3nAmWsBUfwZyIpeM-xSSQ',
-            baseUrl: 'https://deep-index.moralis.io/api/v2.2',
-            supportedChains: ['eth', 'polygon', 'bsc', 'arbitrum', 'optimism', 'avalanche']
-        };
 
         const Portfolio = {
             // State
@@ -560,72 +558,7 @@
             searchQuery: '',
             isLoading: false,
             lastUpdated: null,
-
-            /* ================================================================
-               TOKEN ICON HELPER
-               ============================================================== */
-
-            /**
-             * Get token logo URL with multiple fallback sources
-             */
-            getTokenLogoUrl(token, chain, contractAddress) {
-                // Prioritized list of logo sources
-                const sources = [];
-
-                // 1. Moralis logo (if available)
-                if (token.logo) {
-                    sources.push(token.logo);
-                }
-                if (token.thumbnail) {
-                    sources.push(token.thumbnail);
-                }
-
-                // 2. TrustWallet Assets Repository
-                if (contractAddress && chain) {
-                    const chainMap = {
-                        'eth': 'ethereum',
-                        'polygon': 'polygon',
-                        'bsc': 'smartchain',
-                        'arbitrum': 'arbitrum',
-                        'optimism': 'optimism',
-                        'avalanche': 'avalanchec'
-                    };
-                    const trustwalletChain = chainMap[chain];
-                    if (trustwalletChain) {
-                        sources.push(`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/${trustwalletChain}/assets/${contractAddress}/logo.png`);
-                    }
-                }
-
-                // 3. CoinGecko alternative (for major tokens)
-                if (token.symbol) {
-                    const symbol = token.symbol.toLowerCase();
-                    sources.push(`https://assets.coingecko.com/coins/images/${this.getCoinGeckoId(symbol)}/small/${symbol}.png`);
-                }
-
-                return sources;
-            },
-
-            /**
-             * Get CoinGecko ID for major tokens
-             */
-            getCoinGeckoId(symbol) {
-                const ids = {
-                    'eth': 279,
-                    'weth': 2396,
-                    'usdc': 6319,
-                    'usdt': 325,
-                    'dai': 9791,
-                    'wbtc': 3717,
-                    'matic': 4713,
-                    'bnb': 1839,
-                    'link': 1975,
-                    'uni': 7083,
-                    'aave': 8922,
-                    'crv': 12124,
-                    'snx': 2586
-                };
-                return ids[symbol] || 1; // Default to Bitcoin ID if not found
-            },
+            tokenIconCache: {}, // Cache for preloaded token icons
 
             /* ================================================================
                INITIALIZATION
@@ -734,48 +667,12 @@
                 showNotification('Loading portfolio from blockchain...', 'info', 3000);
 
                 try {
-                    // Fetch tokens from each chain separately
-                    const allTokens = [];
-
-                    for (const chain of MORALIS_CONFIG.supportedChains) {
-                        try {
-                            console.log(`📡 Fetching tokens from ${chain}...`);
-
-                            const response = await fetch(
-                                `${MORALIS_CONFIG.baseUrl}/wallets/${this.walletAddress}/tokens?chain=${chain}`,
-                                {
-                                    method: 'GET',
-                                    headers: {
-                                        'accept': 'application/json',
-                                        'X-API-Key': MORALIS_CONFIG.apiKey
-                                    }
-                                }
-                            );
-
-                            if (!response.ok) {
-                                console.warn(`⚠️ ${chain} API error: ${response.status} ${response.statusText}`);
-                                continue; // Skip this chain and continue with others
-                            }
-
-                            const data = await response.json();
-                            console.log(`✅ ${chain}: ${data.result?.length || 0} tokens`);
-
-                            // Add chain identifier to each token
-                            const tokens = (data.result || []).map(token => ({
-                                ...token,
-                                chain: chain // Ensure chain is set
-                            }));
-
-                            allTokens.push(...tokens);
-                        } catch (chainError) {
-                            console.error(`❌ Error fetching ${chain}:`, chainError);
-                            // Continue with other chains even if one fails
-                        }
-                    }
-
+                    // Use Moralis API wrapper to get multi-chain tokens
+                    console.log('📡 Fetching tokens from all chains via Moralis API...');
+                    const allTokens = await getMultiChainTokens(this.walletAddress);
                     console.log(`📊 Total tokens fetched: ${allTokens.length}`);
 
-                    // Transform combined response to portfolio format
+                    // Transform to portfolio format
                     this.holdings = allTokens
                         .filter(token => {
                             // Filter out zero balances and spam tokens
@@ -795,6 +692,11 @@
                         }))
                         .sort((a, b) => b.value - a.value); // Sort by USD value descending
 
+                    // Preload token icons in background
+                    if (this.holdings.length > 0) {
+                        this.preloadTokenIcons();
+                    }
+
                     this.lastUpdated = new Date();
                     const totalValue = this.holdings.reduce((sum, h) => sum + h.value, 0);
                     console.log(`✅ Portfolio loaded: ${this.holdings.length} tokens, Total value: $${totalValue.toFixed(2)}`);
@@ -812,6 +714,31 @@
                 } finally {
                     this.isLoading = false;
                     this.renderPortfolio();
+                }
+            },
+
+            /**
+             * Preload token icons in background
+             */
+            async preloadTokenIcons() {
+                try {
+                    console.log('🎨 Preloading token icons...');
+                    const tokens = this.holdings.map(h => ({
+                        symbol: h.token,
+                        address: h.contractAddress,
+                        blockchain: h.chain,
+                        logoURI: h.logo
+                    }));
+
+                    // Preload in background (don't wait for completion)
+                    preloadTokenIcons(tokens, 40).then(icons => {
+                        this.tokenIconCache = icons;
+                        console.log(`✅ Preloaded ${Object.keys(icons).length} token icons`);
+                        // Re-render table with loaded icons
+                        this.renderHoldingsTable();
+                    });
+                } catch (error) {
+                    console.warn('⚠️ Failed to preload token icons:', error);
                 }
             },
 
@@ -1009,7 +936,7 @@
                 });
             },
 
-            renderHoldingsTable() {
+            async renderHoldingsTable() {
                 const tbody = document.getElementById('holdingsBody');
                 tbody.innerHTML = '';
 
@@ -1034,31 +961,39 @@
                 });
 
                 // Render rows
-                filtered.forEach(holding => {
+                for (const holding of filtered) {
                     const row = document.createElement('tr');
 
-                    // Get multiple logo sources with fallbacks
-                    const logoSources = this.getTokenLogoUrl(
-                        { logo: holding.logo, symbol: holding.token },
-                        holding.chain,
-                        holding.contractAddress
-                    );
+                    // Check cache first, otherwise use placeholder
+                    const cacheKey = `${holding.chain}_${holding.contractAddress || holding.token}`.toLowerCase();
+                    let iconUrl = this.tokenIconCache[cacheKey];
 
-                    // Create cascading fallback images + final text fallback
-                    let tokenIconHtml = '';
-                    logoSources.forEach((src, i) => {
-                        const isLast = i === logoSources.length - 1;
-                        tokenIconHtml += `<img src="${src}"
-                                              class="token-icon-large"
-                                              style="border-radius: 50%; ${i > 0 ? 'display:none;' : ''}"
-                                              onerror="this.style.display='none'; ${!isLast ? 'this.nextElementSibling.style.display=\'flex\';' : 'this.parentElement.querySelector(\'.token-icon-fallback\').style.display=\'flex\';'}">`;
-                    });
-                    tokenIconHtml += `<div class="token-icon-large token-icon-fallback" style="display:none;">${holding.token.slice(0, 3)}</div>`;
+                    // If not in cache, generate placeholder and load in background
+                    if (!iconUrl) {
+                        iconUrl = generatePlaceholder(holding.token, 40);
+
+                        // Load real icon in background
+                        getTokenIcon({
+                            symbol: holding.token,
+                            address: holding.contractAddress,
+                            blockchain: holding.chain,
+                            logoURI: holding.logo
+                        }, 40).then(url => {
+                            // Update icon once loaded
+                            const img = row.querySelector('.token-icon-large');
+                            if (img && url !== iconUrl) {
+                                img.src = url;
+                            }
+                        });
+                    }
 
                     row.innerHTML = `
                         <td>
                             <div class="token-cell">
-                                ${tokenIconHtml}
+                                <img src="${iconUrl}"
+                                     class="token-icon-large"
+                                     alt="${holding.token}"
+                                     style="border-radius: 50%; object-fit: cover;">
                                 <div class="token-info">
                                     <div class="token-name">${holding.name}</div>
                                     <div class="token-symbol">${holding.token}</div>
@@ -1077,7 +1012,7 @@
                         </td>
                     `;
                     tbody.appendChild(row);
-                });
+                }
 
                 // Show/hide empty state
                 const emptyState = document.getElementById('emptyState');
