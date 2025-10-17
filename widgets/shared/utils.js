@@ -327,58 +327,58 @@ function isPositiveNumber(value) {
    ========================================================================== */
 
 /**
- * Get chain icon URL with multi-tier fallback
+ * Get chain icon URL with multi-tier fallback (CORS-friendly sources only)
  */
 function getChainIconUrl(chain) {
     const chainId = chain.chain_id || chain.id;
     const symbol = (chain.symbol || chain.name).toLowerCase();
 
-    // Chain logo mapping for major chains
+    // Chain logo mapping using CORS-friendly CDNs (CoinGecko, Trust Wallet GitHub)
     const chainLogos = {
-        // Ethereum
-        'eth': 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
-        'ethereum': 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
-        '1': 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+        // Ethereum - CoinGecko
+        'eth': 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+        'ethereum': 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+        '1': 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
 
-        // Polygon
-        'matic': 'https://cryptologos.cc/logos/polygon-matic-logo.png',
-        'polygon': 'https://cryptologos.cc/logos/polygon-matic-logo.png',
-        '137': 'https://cryptologos.cc/logos/polygon-matic-logo.png',
+        // Polygon - CoinGecko
+        'matic': 'https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png',
+        'polygon': 'https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png',
+        '137': 'https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png',
 
-        // BNB Chain
-        'bnb': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
-        'bsc': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
-        '56': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
+        // BNB Chain - CoinGecko
+        'bnb': 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
+        'bsc': 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
+        '56': 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
 
-        // Arbitrum
-        'arbitrum': 'https://cryptologos.cc/logos/arbitrum-arb-logo.png',
-        '42161': 'https://cryptologos.cc/logos/arbitrum-arb-logo.png',
+        // Arbitrum - CoinGecko
+        'arbitrum': 'https://assets.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg',
+        '42161': 'https://assets.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg',
 
-        // Optimism
-        'optimism': 'https://cryptologos.cc/logos/optimism-ethereum-op-logo.png',
-        '10': 'https://cryptologos.cc/logos/optimism-ethereum-op-logo.png',
+        // Optimism - CoinGecko
+        'optimism': 'https://assets.coingecko.com/coins/images/25244/small/Optimism.png',
+        '10': 'https://assets.coingecko.com/coins/images/25244/small/Optimism.png',
 
-        // Avalanche
-        'avax': 'https://cryptologos.cc/logos/avalanche-avax-logo.png',
-        'avalanche': 'https://cryptologos.cc/logos/avalanche-avax-logo.png',
-        '43114': 'https://cryptologos.cc/logos/avalanche-avax-logo.png',
+        // Avalanche - CoinGecko
+        'avax': 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
+        'avalanche': 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
+        '43114': 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
 
-        // Fantom
-        'ftm': 'https://cryptologos.cc/logos/fantom-ftm-logo.png',
-        'fantom': 'https://cryptologos.cc/logos/fantom-ftm-logo.png',
-        '250': 'https://cryptologos.cc/logos/fantom-ftm-logo.png',
+        // Fantom - CoinGecko
+        'ftm': 'https://assets.coingecko.com/coins/images/4001/small/Fantom_round.png',
+        'fantom': 'https://assets.coingecko.com/coins/images/4001/small/Fantom_round.png',
+        '250': 'https://assets.coingecko.com/coins/images/4001/small/Fantom_round.png',
 
-        // Gnosis
-        'xdai': 'https://cryptologos.cc/logos/gnosis-gno-gno-logo.png',
-        'gnosis': 'https://cryptologos.cc/logos/gnosis-gno-gno-logo.png',
-        '100': 'https://cryptologos.cc/logos/gnosis-gno-gno-logo.png',
+        // Gnosis - CoinGecko
+        'xdai': 'https://assets.coingecko.com/coins/images/11062/small/Identity-Primary-DarkBG.png',
+        'gnosis': 'https://assets.coingecko.com/coins/images/11062/small/Identity-Primary-DarkBG.png',
+        '100': 'https://assets.coingecko.com/coins/images/11062/small/Identity-Primary-DarkBG.png',
 
-        // Moonbeam
+        // Moonbeam - CoinGecko
         'glmr': 'https://assets.coingecko.com/coins/images/22459/small/glmr.png',
         'moonbeam': 'https://assets.coingecko.com/coins/images/22459/small/glmr.png',
         '1284': 'https://assets.coingecko.com/coins/images/22459/small/glmr.png',
 
-        // Moonriver
+        // Moonriver - CoinGecko
         'movr': 'https://assets.coingecko.com/coins/images/17984/small/9285.png',
         'moonriver': 'https://assets.coingecko.com/coins/images/17984/small/9285.png',
         '1285': 'https://assets.coingecko.com/coins/images/17984/small/9285.png'
@@ -416,15 +416,15 @@ function getTokenIconUrl(token) {
         return token.logo_uri || token.logoURI;
     }
 
-    // Priority 2: Known native tokens (no address)
+    // Priority 2: Known native tokens (no address) - Using CoinGecko (CORS-friendly)
     if (!address || address === '0x0000000000000000000000000000000000000000') {
         const nativeTokens = {
-            'ETH': 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
-            'BNB': 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
-            'MATIC': 'https://cryptologos.cc/logos/polygon-matic-logo.png',
-            'AVAX': 'https://cryptologos.cc/logos/avalanche-avax-logo.png',
-            'FTM': 'https://cryptologos.cc/logos/fantom-ftm-logo.png',
-            'xDAI': 'https://cryptologos.cc/logos/gnosis-gno-gno-logo.png',
+            'ETH': 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+            'BNB': 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
+            'MATIC': 'https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png',
+            'AVAX': 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
+            'FTM': 'https://assets.coingecko.com/coins/images/4001/small/Fantom_round.png',
+            'xDAI': 'https://assets.coingecko.com/coins/images/11062/small/Identity-Primary-DarkBG.png',
             'GLMR': 'https://assets.coingecko.com/coins/images/22459/small/glmr.png',
             'MOVR': 'https://assets.coingecko.com/coins/images/17984/small/9285.png'
         };
