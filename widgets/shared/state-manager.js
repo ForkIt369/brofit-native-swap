@@ -204,28 +204,52 @@ class StateManager {
     /**
      * Portfolio Methods
      */
-    setPortfolio(holdings) {
-        this.setState('portfolio.holdings', holdings);
+    setPortfolio(portfolioData) {
+        // Handle both old format (just holdings array) and new format (full object)
+        if (Array.isArray(portfolioData)) {
+            // Old format: just holdings array
+            const holdings = portfolioData;
+            this.setState('portfolio.holdings', holdings);
 
-        // Calculate derived values
-        const totalValue = holdings.reduce((sum, h) => sum + (h.value || 0), 0);
-        const weightedChange = holdings.reduce((sum, h) => {
-            return sum + ((h.value || 0) * (h.change24h || 0));
-        }, 0) / (totalValue || 1);
+            // Calculate derived values
+            const totalValue = holdings.reduce((sum, h) => sum + (h.value || 0), 0);
+            const weightedChange = holdings.reduce((sum, h) => {
+                return sum + ((h.value || 0) * (h.change24h || 0));
+            }, 0) / (totalValue || 1);
 
-        const activeChains = [...new Set(holdings.map(h => h.chain))].length;
+            const activeChains = [...new Set(holdings.map(h => h.chain))].length;
 
-        this.setState('portfolio.totalValue', totalValue);
-        this.setState('portfolio.change24h', weightedChange);
-        this.setState('portfolio.activeChains', activeChains);
-        this.setState('portfolio.totalAssets', holdings.length);
-        this.setState('portfolio.lastUpdated', new Date().toISOString());
+            this.setState('portfolio.totalValue', totalValue);
+            this.setState('portfolio.change24h', weightedChange);
+            this.setState('portfolio.activeChains', activeChains);
+            this.setState('portfolio.totalAssets', holdings.length);
+            this.setState('portfolio.lastUpdated', new Date().toISOString());
 
-        console.log('💼 Portfolio updated:', {
-            assets: holdings.length,
-            value: totalValue,
-            chains: activeChains
-        });
+            console.log('💼 Portfolio updated:', {
+                assets: holdings.length,
+                value: totalValue,
+                chains: activeChains
+            });
+        } else {
+            // New format: full portfolio object with pre-calculated values
+            const { holdings, totalValue, change24h, activeChains, totalAssets } = portfolioData;
+
+            // Ensure holdings is an array
+            const holdingsArray = Array.isArray(holdings) ? holdings : [];
+
+            this.setState('portfolio.holdings', holdingsArray);
+            this.setState('portfolio.totalValue', totalValue || 0);
+            this.setState('portfolio.change24h', change24h || 0);
+            this.setState('portfolio.activeChains', activeChains || 0);
+            this.setState('portfolio.totalAssets', totalAssets || holdingsArray.length);
+            this.setState('portfolio.lastUpdated', new Date().toISOString());
+
+            console.log('💼 Portfolio updated:', {
+                assets: holdingsArray.length,
+                value: totalValue,
+                chains: activeChains
+            });
+        }
     }
 
     setPortfolioLoading(isLoading) {
