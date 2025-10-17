@@ -713,7 +713,7 @@
 
                 // Enable swap and fetch quote
                 button.disabled = false;
-                button.textContent = \`Swap \${this.fromAmount} \${this.fromToken.symbol}\`;
+                button.textContent = `Swap ${this.fromAmount} ${this.fromToken.symbol}`;
 
                 this.fetchSwapQuote();
             },
@@ -799,11 +799,11 @@
                         // Format API response
                         const quote = {
                             outputAmount: apiQuote.toTokenAmount || apiQuote.outputAmount || '0',
-                            rate: apiQuote.rate || \`1 \${this.fromToken.symbol} = \${apiQuote.price || '?'} \${this.toToken.symbol}\`,
+                            rate: apiQuote.rate || `1 ${this.fromToken.symbol} = ${apiQuote.price || '?'} ${this.toToken.symbol}`,
                             priceImpact: apiQuote.priceImpact || '< 0.01%',
                             networkFee: apiQuote.gasFee || apiQuote.networkFee || '~$5.00',
                             route: apiQuote.protocol || apiQuote.route || 'Best Route',
-                            minReceived: apiQuote.minReceived || \`\${(parseFloat(apiQuote.toTokenAmount || 0) * 0.995).toFixed(6)} \${this.toToken.symbol}\`
+                            minReceived: apiQuote.minReceived || `${(parseFloat(apiQuote.toTokenAmount || 0) * 0.995).toFixed(6)} ${this.toToken.symbol}`
                         };
 
                         console.log('✅ Quote received from RocketX:', quote);
@@ -827,11 +827,11 @@
 
                 return {
                     outputAmount,
-                    rate: \`1 \${this.fromToken.symbol} = \${mockRate.toLocaleString()} \${this.toToken.symbol}\`,
+                    rate: `1 ${this.fromToken.symbol} = ${mockRate.toLocaleString()} ${this.toToken.symbol}`,
                     priceImpact: '< 0.01%',
                     networkFee: '~$5.00',
                     route: 'Best Route (Demo)',
-                    minReceived: \`\${minReceived} \${this.toToken.symbol}\`
+                    minReceived: `${minReceived} ${this.toToken.symbol}`
                 };
             },
 
@@ -998,7 +998,7 @@
                     // Mock swap execution
                     await new Promise(resolve => setTimeout(resolve, 2000));
 
-                    showNotification(\`Successfully swapped \${this.fromAmount} \${this.fromToken.symbol} for \${this.toAmount} \${this.toToken.symbol}!\`, 'success');
+                    showNotification(`Successfully swapped ${this.fromAmount} ${this.fromToken.symbol} for ${this.toAmount} ${this.toToken.symbol}!`, 'success');
 
                     // Save to transaction history
                     if (typeof rocketxAPI !== 'undefined') {
