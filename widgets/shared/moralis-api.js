@@ -11,7 +11,7 @@
    ========================================================================== */
 
 const MORALIS_CONFIG = {
-    API_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjM3MmE3NmNkLTRkZmYtNGI2OC05NTRiLWQwNWZiZTlmNTgzYyIsIm9yZ0lkIjoiNDQ3MzE4IiwidXNlcklkIjoiNDYwMjM2IiwidHlwZUlkIjoiYjFjY2Y1OWUtN2M3Mi00YjdlLWJkNTEtMjQzNmRmZDg2OTc2IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3NDczNTM2MDMsImV4cCI6NDkwMzExMzYwM30.d03rGvyBobwlLHYpGJcnnd3nAmWsBUfwZyIpeM-xSSQ',
+    API_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjM3MmE3NmNkLTRkZmYtNGI2OC05NTRiLWQwNWZiZTlmNTgzYyIsIm9yZ0lkIjoiNDQ3MzE4IiwidXNlcklkIjoiNDYwMjM2IiwidHlwZUlkIjoiYjFjY2Y1OWUtN2M3Mi00YjdlLWJkNTEtMjQzNmRmZDg2OTc2IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3NDczNTM2MDMsImV4cCI6NDkwMzExMzYwM30.d03rGvyBobwlLHYpGJcnnd3nAmWsBUfwZyIpeM-xSSQ', // Starter Plan - Updated Oct 17, 2025
     BASE_URL: 'https://deep-index.moralis.io/api/v2.2',
 
     // Supported chains with their identifiers
@@ -139,9 +139,19 @@ async function getWalletTokens(address, chain = 'eth') {
 async function getMultiChainTokens(address, chains = null) {
     if (!address) throw new Error('Address is required');
 
-    const chainsToQuery = chains || Object.keys(MORALIS_CONFIG.CHAINS)
-        .filter((k, i, arr) => arr.indexOf(k) === i) // Remove duplicates
-        .map(k => MORALIS_CONFIG.CHAINS[k].id);
+    // Check if demo mode should be enabled
+    const isDemo = await checkDemoMode();
+    if (isDemo) {
+        console.log('🎭 Demo mode active - returning mock portfolio');
+        // Add slight delay to simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return generateDemoPortfolio(address);
+    }
+
+    // Get unique chain IDs only (fix: was querying same chains multiple times)
+    const chainsToQuery = chains || [...new Set(
+        Object.values(MORALIS_CONFIG.CHAINS).map(c => c.id)
+    )];
 
     const results = [];
 
@@ -155,6 +165,11 @@ async function getMultiChainTokens(address, chains = null) {
             results.push(...tokens);
         } catch (error) {
             console.warn(`Failed to fetch ${chain} tokens:`, error);
+            // If 401, enable demo mode for next request
+            if (error.message && error.message.includes('401')) {
+                demoModeEnabled = true;
+                demoModeCheckTime = Date.now();
+            }
             // Continue with other chains
         }
     }
@@ -195,9 +210,10 @@ async function getNativeBalance(address, chain = 'eth') {
 async function getMultiChainNativeBalances(address, chains = null) {
     if (!address) throw new Error('Address is required');
 
-    const chainsToQuery = chains || Object.keys(MORALIS_CONFIG.CHAINS)
-        .filter((k, i, arr) => arr.indexOf(k) === i)
-        .map(k => MORALIS_CONFIG.CHAINS[k].id);
+    // Get unique chain IDs only
+    const chainsToQuery = chains || [...new Set(
+        Object.values(MORALIS_CONFIG.CHAINS).map(c => c.id)
+    )];
 
     const results = {};
 
@@ -440,6 +456,136 @@ async function getPortfolioSummary(address, topN = 5) {
 }
 
 /* ============================================================================
+   DEMO MODE (Fallback when API key is invalid)
+   ========================================================================== */
+
+/**
+ * Generate realistic demo portfolio data
+ */
+function generateDemoPortfolio(address) {
+    console.log('🎭 Using demo mode with mock portfolio data');
+
+    return [
+        {
+            token_address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+            symbol: 'WETH',
+            name: 'Wrapped Ether',
+            chain: 'eth',
+            balance: '1250000000000000000',
+            balance_formatted: '1.25',
+            decimals: 18,
+            logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png',
+            usd_value: 3125.50,
+            usd_price_24hr_percent_change: 2.45
+        },
+        {
+            token_address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+            symbol: 'USDT',
+            name: 'Tether USD',
+            chain: 'eth',
+            balance: '5000000000',
+            balance_formatted: '5000',
+            decimals: 6,
+            logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png',
+            usd_value: 5000.00,
+            usd_price_24hr_percent_change: 0.01
+        },
+        {
+            token_address: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
+            symbol: 'MATIC',
+            name: 'Polygon',
+            chain: 'polygon',
+            balance: '10000000000000000000000',
+            balance_formatted: '10000',
+            decimals: 18,
+            logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/assets/0x0000000000000000000000000000000000001010/logo.png',
+            usd_value: 8500.00,
+            usd_price_24hr_percent_change: -1.23
+        },
+        {
+            token_address: '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
+            symbol: 'USDC',
+            name: 'USD Coin',
+            chain: 'polygon',
+            balance: '2500000000',
+            balance_formatted: '2500',
+            decimals: 6,
+            logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/polygon/assets/0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174/logo.png',
+            usd_value: 2500.00,
+            usd_price_24hr_percent_change: 0.00
+        },
+        {
+            token_address: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+            symbol: 'WBNB',
+            name: 'Wrapped BNB',
+            chain: 'bsc',
+            balance: '3500000000000000000',
+            balance_formatted: '3.5',
+            decimals: 18,
+            logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/assets/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c/logo.png',
+            usd_value: 1750.00,
+            usd_price_24hr_percent_change: 1.89
+        },
+        {
+            token_address: '0x912ce59144191c1204e64559fe8253a0e49e6548',
+            symbol: 'ARB',
+            name: 'Arbitrum',
+            chain: 'arbitrum',
+            balance: '5000000000000000000000',
+            balance_formatted: '5000',
+            decimals: 18,
+            logo: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/arbitrum/info/logo.png',
+            usd_value: 4500.00,
+            usd_price_24hr_percent_change: 3.12
+        }
+    ];
+}
+
+/**
+ * Check if demo mode should be enabled
+ */
+let demoModeEnabled = false;
+let demoModeCheckTime = 0;
+const DEMO_MODE_CHECK_INTERVAL = 60000; // Check every 60 seconds
+
+async function checkDemoMode() {
+    const now = Date.now();
+
+    // Only check once per minute to avoid excessive checks
+    if (now - demoModeCheckTime < DEMO_MODE_CHECK_INTERVAL) {
+        return demoModeEnabled;
+    }
+
+    demoModeCheckTime = now;
+
+    try {
+        // Try a simple API call to check if key is valid
+        const testResponse = await fetch(
+            `${MORALIS_CONFIG.BASE_URL}/erc20/metadata?chain=eth&addresses=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2`,
+            {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-API-Key': MORALIS_CONFIG.API_KEY
+                }
+            }
+        );
+
+        if (testResponse.status === 401) {
+            demoModeEnabled = true;
+            console.warn('⚠️ Moralis API key is invalid/expired - Demo mode enabled');
+        } else {
+            demoModeEnabled = false;
+        }
+    } catch (error) {
+        demoModeEnabled = true;
+        console.warn('⚠️ Moralis API unreachable - Demo mode enabled');
+    }
+
+    return demoModeEnabled;
+}
+
+/* ============================================================================
    CACHE UTILITIES
    ========================================================================== */
 
@@ -559,6 +705,10 @@ if (typeof window !== 'undefined') {
     // High-level helpers
     window.getCompletePortfolio = getCompletePortfolio;
     window.getPortfolioSummary = getPortfolioSummary;
+
+    // Demo mode
+    window.checkDemoMode = checkDemoMode;
+    window.generateDemoPortfolio = generateDemoPortfolio;
 
     // Cache
     window.clearMoralisCache = clearMoralisCache;

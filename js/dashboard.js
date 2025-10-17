@@ -436,6 +436,14 @@ class DashboardController {
 
             console.log(`✅ Portfolio loaded: ${holdings.length} tokens across ${activeChains} chains, $${totalValue.toFixed(2)} total value`);
 
+            // Check if demo mode was used and notify user
+            if (typeof checkDemoMode === 'function') {
+                const isDemoMode = await checkDemoMode();
+                if (isDemoMode) {
+                    this.showDemoModeNotification();
+                }
+            }
+
             // Hide loading overlay
             this.hideLoadingState();
         } catch (error) {
@@ -529,7 +537,7 @@ class DashboardController {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                justify-center;
+                justify-content: center;
                 z-index: 10000;
                 backdrop-filter: blur(8px);
             `;
@@ -550,8 +558,47 @@ class DashboardController {
         `;
         overlay.style.display = 'flex';
 
-        // Auto-hide after 5 seconds
-        setTimeout(() => this.hideLoadingState(), 5000);
+        // Auto-hide after 8 seconds (increased for readability)
+        setTimeout(() => this.hideLoadingState(), 8000);
+    }
+
+    /**
+     * Show demo mode notification
+     */
+    showDemoModeNotification() {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            max-width: 400px;
+            font-size: 14px;
+            line-height: 1.5;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        notification.innerHTML = `
+            <div style="font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                🎭 Demo Mode Active
+            </div>
+            <div style="font-size: 13px; opacity: 0.95;">
+                Showing sample portfolio data because the API key has expired.
+                Get a new Moralis API key to view real portfolio data.
+            </div>
+        `;
+        document.body.appendChild(notification);
+
+        // Auto-remove after 10 seconds
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }, 10000);
     }
 
     /**
