@@ -191,12 +191,15 @@ class DashboardController {
         // Load portfolio data
         this.loadPortfolioData(address);
 
-        // Notify iframe widgets of wallet connection
+        // Notify iframe widgets of wallet connection (lowercase for widget compatibility)
         this.notifyWidgets({
-            type: 'WALLET_CONNECTED',
+            type: 'wallet_connected',
             address,
             chainId
         });
+
+        // Also save to simple localStorage key for widget access
+        localStorage.setItem('brofit_wallet_address', address);
     }
 
     /**
@@ -210,13 +213,14 @@ class DashboardController {
 
         // Clear localStorage
         localStorage.removeItem('brofit_connected_wallet');
+        localStorage.removeItem('brofit_wallet_address');
 
         // Update UI
         this.updateWalletUI(null);
 
-        // Notify iframe widgets of wallet disconnect
+        // Notify iframe widgets of wallet disconnect (lowercase for widget compatibility)
         this.notifyWidgets({
-            type: 'WALLET_DISCONNECTED'
+            type: 'wallet_disconnected'
         });
     }
 

@@ -79,6 +79,19 @@
             color: white;
             font-size: 16px;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .token-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .token-icon-text {
+            font-size: 14px;
+            font-weight: var(--font-weight-bold);
+            color: white;
         }
 
         .token-info {
@@ -358,6 +371,13 @@
             color: white;
             font-size: 14px;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .token-list-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .token-list-info {
@@ -423,7 +443,9 @@
             <div class="token-section">
                 <div class="section-header">From</div>
                 <div class="token-selector" id="fromTokenSelector">
-                    <div class="token-icon">ETH</div>
+                    <div class="token-icon" id="fromTokenIcon">
+                        <span class="token-icon-text">ETH</span>
+                    </div>
                     <div class="token-info">
                         <div class="token-symbol">ETH</div>
                         <div class="token-name">Ethereum</div>
@@ -453,7 +475,9 @@
             <div class="token-section">
                 <div class="section-header">To (estimated)</div>
                 <div class="token-selector" id="toTokenSelector">
-                    <div class="token-icon">USDT</div>
+                    <div class="token-icon" id="toTokenIcon">
+                        <span class="token-icon-text">USDT</span>
+                    </div>
                     <div class="token-info">
                         <div class="token-symbol">USDT</div>
                         <div class="token-name">Tether USD</div>
@@ -530,8 +554,8 @@
             async init() {
                 console.log('🔄 Initializing Swap Widget...');
 
-                // Check wallet
-                this.walletAddress = await getWalletAddress();
+                // Check wallet - try multiple methods for iframe context
+                this.walletAddress = await this.getWalletAddressSafe();
 
                 // Setup event listeners
                 this.setupEventListeners();
@@ -539,7 +563,35 @@
                 // Update UI
                 this.updateWalletUI();
 
-                console.log('✅ Swap widget initialized');
+                // Render initial token icons
+                this.updateTokenIcon('from', this.fromToken);
+                this.updateTokenIcon('to', this.toToken);
+
+                console.log('✅ Swap widget initialized', { wallet: this.walletAddress });
+            },
+
+            /**
+             * Safe wallet address getter for iframe context
+             */
+            async getWalletAddressSafe() {
+                // Method 1: Try getWalletAddress() utility
+                const walletFromUtils = await getWalletAddress();
+                if (walletFromUtils) {
+                    console.log('✅ Wallet detected via utils:', walletFromUtils);
+                    return walletFromUtils;
+                }
+
+                // Method 2: Check localStorage (parent may have saved it)
+                const savedWallet = localStorage.getItem('brofit_wallet_address');
+                if (savedWallet) {
+                    console.log('✅ Wallet detected via localStorage:', savedWallet);
+                    return savedWallet;
+                }
+
+                // Method 3: Check if parent posted wallet via postMessage
+                // (Will be set via message listener)
+                console.log('⏳ No wallet detected yet, waiting for connection...');
+                return null;
             },
 
             /* ================================================================
@@ -609,10 +661,34 @@
                     // Load balances (mock data for now)
                     document.getElementById('fromBalance').textContent = '2.5 ETH';
                     document.getElementById('toBalance').textContent = '5,000 USDT';
+                    console.log('✅ Wallet UI updated - connected');
                 } else {
                     button.textContent = 'Connect Wallet to Swap';
                     button.disabled = true;
+                    console.log('⏳ Wallet UI updated - not connected');
                 }
+            },
+
+            /**
+             * Update token icon with proper image rendering
+             */
+            updateTokenIcon(direction, token) {
+                const iconElement = document.getElementById(`${direction}TokenIcon`);
+                if (!iconElement) return;
+
+                const iconUrl = getTokenIconUrl(token);
+                const symbolText = token.symbol.substring(0, 3).toUpperCase();
+
+                // Try to load image first
+                const img = new Image();
+                img.onload = () => {
+                    iconElement.innerHTML = `<img src="${iconUrl}" alt="${token.symbol}" />`;
+                };
+                img.onerror = () => {
+                    // Fallback to text
+                    iconElement.innerHTML = `<span class="token-icon-text">${symbolText}</span>`;
+                };
+                img.src = iconUrl;
             },
 
             /* ================================================================
@@ -656,12 +732,13 @@
                 this.fromToken = this.toToken;
                 this.toToken = temp;
 
-                // Update UI
-                document.querySelector('#fromTokenSelector .token-icon').textContent = this.fromToken.symbol.substring(0, 3);
+                // Update UI with proper icon rendering
+                this.updateTokenIcon('from', this.fromToken);
+                this.updateTokenIcon('to', this.toToken);
+
                 document.querySelector('#fromTokenSelector .token-symbol').textContent = this.fromToken.symbol;
                 document.querySelector('#fromTokenSelector .token-name').textContent = this.fromToken.name;
 
-                document.querySelector('#toTokenSelector .token-icon').textContent = this.toToken.symbol.substring(0, 3);
                 document.querySelector('#toTokenSelector .token-symbol').textContent = this.toToken.symbol;
                 document.querySelector('#toTokenSelector .token-name').textContent = this.toToken.name;
 
@@ -669,6 +746,8 @@
                 if (this.fromAmount) {
                     this.fetchSwapQuote();
                 }
+
+                console.log('🔄 Tokens swapped:', this.fromToken.symbol, '↔️', this.toToken.symbol);
             },
 
             /* ================================================================
@@ -830,15 +909,26 @@
                     return;
                 }
 
-                tokenList.innerHTML = this.filteredTokens.slice(0, 50).map(token => `
-                    <div class="token-list-item" data-token='${JSON.stringify(token)}'>
-                        <div class="token-list-icon">${token.symbol.substring(0, 3).toUpperCase()}</div>
-                        <div class="token-list-info">
-                            <div class="token-list-symbol">${token.symbol}</div>
-                            <div class="token-list-name">${token.name || 'Unknown'}</div>
+                tokenList.innerHTML = this.filteredTokens.slice(0, 50).map(token => {
+                    const iconUrl = getTokenIconUrl(token);
+                    const symbolText = token.symbol.substring(0, 3).toUpperCase();
+
+                    return `
+                        <div class="token-list-item" data-token='${JSON.stringify(token).replace(/'/g, '&apos;')}'>
+                            <div class="token-list-icon">
+                                <img
+                                    src="${iconUrl}"
+                                    alt="${token.symbol}"
+                                    onerror="this.style.display='none'; this.parentElement.innerHTML='<span class=&quot;token-icon-text&quot;>${symbolText}</span>';"
+                                />
+                            </div>
+                            <div class="token-list-info">
+                                <div class="token-list-symbol">${token.symbol}</div>
+                                <div class="token-list-name">${token.name || 'Unknown'}</div>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
 
                 // Add click listeners
                 tokenList.querySelectorAll('.token-list-item').forEach(item => {
@@ -852,12 +942,12 @@
             selectToken(token) {
                 if (this.currentSelector === 'from') {
                     this.fromToken = token;
-                    document.querySelector('#fromTokenSelector .token-icon').textContent = token.symbol.substring(0, 3).toUpperCase();
+                    this.updateTokenIcon('from', token);
                     document.querySelector('#fromTokenSelector .token-symbol').textContent = token.symbol;
                     document.querySelector('#fromTokenSelector .token-name').textContent = token.name || 'Unknown';
                 } else if (this.currentSelector === 'to') {
                     this.toToken = token;
-                    document.querySelector('#toTokenSelector .token-icon').textContent = token.symbol.substring(0, 3).toUpperCase();
+                    this.updateTokenIcon('to', token);
                     document.querySelector('#toTokenSelector .token-symbol').textContent = token.symbol;
                     document.querySelector('#toTokenSelector .token-name').textContent = token.name || 'Unknown';
                 }
@@ -868,6 +958,8 @@
                 if (this.fromAmount) {
                     this.fetchSwapQuote();
                 }
+
+                console.log('✅ Token selected:', token.symbol);
             },
 
             getPopularTokens() {
@@ -945,8 +1037,18 @@
 
         // Listen for wallet connection changes from parent dashboard
         window.addEventListener('message', (event) => {
-            if (event.data.type === 'wallet_connected') {
+            if (event.data.type === 'wallet_connected' && event.data.address) {
+                console.log('📨 Received wallet connection from parent:', event.data.address);
                 SwapWidget.walletAddress = event.data.address;
+
+                // Save to localStorage for persistence
+                localStorage.setItem('brofit_wallet_address', event.data.address);
+
+                SwapWidget.updateWalletUI();
+            } else if (event.data.type === 'wallet_disconnected') {
+                console.log('📨 Received wallet disconnection from parent');
+                SwapWidget.walletAddress = null;
+                localStorage.removeItem('brofit_wallet_address');
                 SwapWidget.updateWalletUI();
             }
         });
