@@ -154,17 +154,17 @@ class DashboardController {
      */
     async connectWallet() {
         try {
-            showNotification('Connecting to MetaMask...', 'info', 2000);
+            showNotification('Connecting to MetaMask...', 'info', window.BRO_CONSTANTS.NOTIFICATION_DURATION.SHORT);
 
             const wallet = await connectWallet();
 
             if (wallet && wallet.address) {
                 this.handleWalletConnect(wallet.address, wallet.chainId);
-                showNotification('Wallet connected successfully!', 'success', 3000);
+                showNotification('Wallet connected successfully!', 'success', window.BRO_CONSTANTS.NOTIFICATION_DURATION.MEDIUM);
             }
         } catch (error) {
             console.error('❌ Failed to connect wallet:', error);
-            showNotification('Failed to connect wallet: ' + error.message, 'error', 5000);
+            showNotification('Failed to connect wallet: ' + error.message, 'error', window.BRO_CONSTANTS.NOTIFICATION_DURATION.LONG);
         }
     }
 
@@ -368,7 +368,7 @@ class DashboardController {
         }
 
         try {
-            showNotification('Loading portfolio data...', 'info', 2000);
+            showNotification('Loading portfolio data...', 'info', window.BRO_CONSTANTS.NOTIFICATION_DURATION.SHORT);
 
             // Load portfolio data
             await this.loadPortfolioData(address);
@@ -376,10 +376,10 @@ class DashboardController {
             // Load transaction history from localStorage
             this.loadTransactionHistory();
 
-            showNotification('Dashboard data loaded', 'success', 2000);
+            showNotification('Dashboard data loaded', 'success', window.BRO_CONSTANTS.NOTIFICATION_DURATION.SHORT);
         } catch (error) {
             console.error('❌ Failed to load dashboard data:', error);
-            showNotification('Failed to load data: ' + error.message, 'error', 5000);
+            showNotification('Failed to load data: ' + error.message, 'error', window.BRO_CONSTANTS.NOTIFICATION_DURATION.LONG);
         }
     }
 
@@ -515,7 +515,7 @@ class DashboardController {
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                z-index: 10000;
+                z-index: ${window.BRO_CONSTANTS.Z_INDEX.LOADING};
                 backdrop-filter: blur(8px);
             `;
             document.body.appendChild(overlay);
@@ -562,7 +562,7 @@ class DashboardController {
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                z-index: 10000;
+                z-index: ${window.BRO_CONSTANTS.Z_INDEX.LOADING};
                 backdrop-filter: blur(8px);
             `;
             document.body.appendChild(overlay);
@@ -583,7 +583,7 @@ class DashboardController {
         overlay.style.display = 'flex';
 
         // Auto-hide after 8 seconds (increased for readability)
-        setTimeout(() => this.hideLoadingState(), 8000);
+        setTimeout(() => this.hideLoadingState(), window.BRO_CONSTANTS.NOTIFICATION_DURATION.EXTENDED);
     }
 
     /**
@@ -621,8 +621,8 @@ class DashboardController {
         setTimeout(() => {
             notification.style.opacity = '0';
             notification.style.transition = 'opacity 0.3s ease-out';
-            setTimeout(() => notification.remove(), 300);
-        }, 10000);
+            setTimeout(() => notification.remove(), window.BRO_CONSTANTS.ANIMATION_DURATION.MEDIUM);
+        }, window.BRO_CONSTANTS.NOTIFICATION_DURATION.PERSISTENT);
     }
 
     /**
