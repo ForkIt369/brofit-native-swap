@@ -689,7 +689,8 @@ class DashboardController {
         if (!holdings || holdings.length === 0) {
             listEl.innerHTML = `
                 <div class="empty-state">
-                    <p>No holdings found</p>
+                    <div class="empty-state-icon">💼</div>
+                    <p>No Holdings Yet</p>
                     <p class="empty-state-sub">Connect your wallet to view holdings</p>
                 </div>
             `;
@@ -730,7 +731,8 @@ class DashboardController {
         if (!transactions || transactions.length === 0) {
             listEl.innerHTML = `
                 <div class="empty-state">
-                    <p>No recent transactions</p>
+                    <div class="empty-state-icon">📊</div>
+                    <p>No Transactions Yet</p>
                     <p class="empty-state-sub">Your transaction history will appear here</p>
                 </div>
             `;
