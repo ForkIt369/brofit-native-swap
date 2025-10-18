@@ -873,7 +873,7 @@
                 if (!selector) return;
 
                 const iconUrl = getChainIconUrl(chain);
-                const symbolText = (chain.symbol || chain.name).substring(0, 3).toUpperCase();
+                const symbolText = (chain.symbol || chain.name).substring(0, 4).toUpperCase();
 
                 // Try to load image first
                 if (iconUrl) {
@@ -900,7 +900,7 @@
                 if (!selector) return;
 
                 const iconUrl = getTokenIconUrl(token);
-                const symbolText = token.symbol.substring(0, 3).toUpperCase();
+                const symbolText = token.symbol.substring(0, Math.min(4, token.symbol.length)).toUpperCase();
 
                 // Try to load image first
                 const img = new Image();
@@ -1023,7 +1023,7 @@
 
                 chainList.innerHTML = this.filteredChains.map(chain => {
                     const iconUrl = getChainIconUrl(chain);
-                    const symbolText = (chain.symbol || chain.name).substring(0, 3).toUpperCase();
+                    const symbolText = (chain.symbol || chain.name).substring(0, 4).toUpperCase();
 
                     return `
                         <div class="list-item" data-chain='${JSON.stringify(chain).replace(/'/g, '&apos;')}'>
@@ -1153,7 +1153,7 @@
 
                 tokenList.innerHTML = this.filteredTokens.slice(0, 50).map(token => {
                     const iconUrl = getTokenIconUrl(token);
-                    const symbolText = token.symbol.substring(0, 3).toUpperCase();
+                    const symbolText = token.symbol.substring(0, Math.min(4, token.symbol.length)).toUpperCase();
 
                     return `
                         <div class="list-item" data-token='${JSON.stringify(token).replace(/'/g, '&apos;')}'>

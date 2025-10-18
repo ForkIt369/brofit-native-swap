@@ -434,7 +434,7 @@
         <!-- Header -->
         <div class="widget-header">
             <h1 class="widget-title">🔄 Token Swap</h1>
-            <p class="widget-description">Exchange tokens across 180+ chains with best rates</p>
+            <p class="widget-description">Exchange tokens across 10 supported chains with best rates</p>
         </div>
 
         <!-- Swap Card -->
@@ -677,7 +677,7 @@
                 if (!iconElement) return;
 
                 const iconUrl = getTokenIconUrl(token);
-                const symbolText = token.symbol.substring(0, 3).toUpperCase();
+                const symbolText = token.symbol.substring(0, Math.min(4, token.symbol.length)).toUpperCase();
 
                 // Try to load image first
                 const img = new Image();
@@ -911,7 +911,7 @@
 
                 tokenList.innerHTML = this.filteredTokens.slice(0, 50).map(token => {
                     const iconUrl = getTokenIconUrl(token);
-                    const symbolText = token.symbol.substring(0, 3).toUpperCase();
+                    const symbolText = token.symbol.substring(0, Math.min(4, token.symbol.length)).toUpperCase();
 
                     return `
                         <div class="token-list-item" data-token='${JSON.stringify(token).replace(/'/g, '&apos;')}'>

@@ -633,10 +633,25 @@ class DashboardController {
             totalValueEl.textContent = formatCurrency(portfolio.totalValue || 0);
         }
 
-        // Wallet balance (in header)
+        // Wallet balance (in header) - Show native token balance, not total portfolio value
         const walletBalanceEl = document.getElementById('walletBalance');
         if (walletBalanceEl) {
-            walletBalanceEl.textContent = formatCurrency(portfolio.totalValue || 0);
+            // Get current chain symbol
+            const chainSymbol = window.getState('chain.symbol') || 'ETH';
+
+            // Find native token in holdings (ETH, MATIC, BNB, etc.)
+            const nativeToken = (portfolio.holdings || []).find(h =>
+                h.token?.toUpperCase() === chainSymbol.toUpperCase()
+            );
+
+            if (nativeToken && nativeToken.balance) {
+                // Show native token balance (e.g., "2.5 ETH")
+                const balance = parseFloat(nativeToken.balance).toFixed(4);
+                walletBalanceEl.textContent = `${balance} ${chainSymbol}`;
+            } else {
+                // Fallback to "0 ETH" if native token not found
+                walletBalanceEl.textContent = `0 ${chainSymbol}`;
+            }
         }
 
         // 24h change
