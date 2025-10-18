@@ -30,10 +30,10 @@ const MORALIS_CONFIG = {
         'ftm': { id: 'fantom', name: 'Fantom', moralisId: '0xfa' }
     },
 
-    // Cache settings
+    // Cache settings (optimized for performance)
     CACHE_PREFIX: 'brofit_moralis_',
-    CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
-    BALANCE_CACHE_DURATION: 30 * 1000 // 30 seconds for balances
+    CACHE_DURATION: 10 * 60 * 1000, // 10 minutes (increased from 5)
+    BALANCE_CACHE_DURATION: 60 * 1000 // 60 seconds for balances (increased from 30)
 };
 
 /* ============================================================================

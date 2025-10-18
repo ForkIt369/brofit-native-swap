@@ -174,16 +174,37 @@ class DashboardController {
     handleWalletConnect(address, chainId = null) {
         this.walletConnected = true;
 
-        // Update state manager
+        // Update state manager (StateManager will handle localStorage via debounced save)
         window.stateManager.setWallet(address, window.ethereum, chainId);
 
-        // IMPORTANT: Also save to localStorage for iframe widgets
-        localStorage.setItem('brofit_connected_wallet', JSON.stringify({
-            address,
-            chainId,
-            connected: true,
-            timestamp: Date.now()
-        }));
+        // IMPORTANT: Save wallet data for iframe widgets (immediate save needed)
+        // Use storageUtils for batch save to reduce localStorage operations
+        if (window.storageUtils) {
+            window.storageUtils.batchSave([
+                {
+                    key: 'brofit_connected_wallet',
+                    value: {
+                        address,
+                        chainId,
+                        connected: true,
+                        timestamp: Date.now()
+                    }
+                },
+                {
+                    key: 'brofit_wallet_address',
+                    value: address
+                }
+            ]);
+        } else {
+            // Fallback if storageUtils not loaded
+            localStorage.setItem('brofit_connected_wallet', JSON.stringify({
+                address,
+                chainId,
+                connected: true,
+                timestamp: Date.now()
+            }));
+            localStorage.setItem('brofit_wallet_address', address);
+        }
 
         // Update UI
         this.updateWalletUI(address);
@@ -197,9 +218,6 @@ class DashboardController {
             address,
             chainId
         });
-
-        // Also save to simple localStorage key for widget access
-        localStorage.setItem('brofit_wallet_address', address);
     }
 
     /**

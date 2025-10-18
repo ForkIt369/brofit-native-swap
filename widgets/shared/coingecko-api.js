@@ -14,8 +14,8 @@ const COINGECKO_CONFIG = {
     API_KEY: 'CG-W6Sr7Nw6HLqTGC1s2LEFLKZw',
     BASE_URL: 'https://api.coingecko.com/api/v3',
     CACHE_PREFIX: 'brofit_cg_',
-    CACHE_DURATION: 5 * 60 * 1000, // 5 minutes for price data
-    METADATA_CACHE_DURATION: 24 * 60 * 60 * 1000, // 24 hours for metadata
+    CACHE_DURATION: 10 * 60 * 1000, // 10 minutes for price data (increased from 5)
+    METADATA_CACHE_DURATION: 48 * 60 * 60 * 1000, // 48 hours for metadata (increased from 24)
 
     // Rate limiting (Demo API plan)
     RATE_LIMIT: {

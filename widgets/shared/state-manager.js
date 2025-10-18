@@ -106,8 +106,8 @@ class StateManager {
         // Notify observers
         this.notifyObservers(path, value, oldValue);
 
-        // Save to localStorage
-        this.saveToStorage();
+        // Save to localStorage (debounced to prevent excessive writes)
+        this.debouncedSaveToStorage();
 
         // Emit custom event
         this.emitStateChange(path, value, oldValue);
@@ -307,6 +307,30 @@ class StateManager {
     /**
      * Persistence Methods
      */
+    debouncedSaveToStorage() {
+        // Use storageUtils for debounced save (500ms delay)
+        if (window.storageUtils) {
+            const stateToSave = {
+                wallet: {
+                    address: this.state.wallet.address,
+                    connected: this.state.wallet.connected,
+                    chainId: this.state.wallet.chainId
+                },
+                chain: this.state.chain,
+                portfolio: {
+                    lastUpdated: this.state.portfolio.lastUpdated
+                },
+                history: this.state.history,
+                ui: this.state.ui
+            };
+
+            window.storageUtils.debouncedSave('brofit_state', stateToSave, 500);
+        } else {
+            // Fallback to immediate save if storageUtils not loaded
+            this.saveToStorage();
+        }
+    }
+
     saveToStorage() {
         try {
             const stateToSave = {
