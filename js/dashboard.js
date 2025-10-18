@@ -248,7 +248,9 @@ class DashboardController {
     notifyWidgets(message) {
         const widgetFrame = document.getElementById('widgetFrame');
         if (widgetFrame && widgetFrame.contentWindow) {
-            widgetFrame.contentWindow.postMessage(message, '*');
+            // Use same origin for security instead of wildcard
+            const targetOrigin = window.location.origin;
+            widgetFrame.contentWindow.postMessage(message, targetOrigin);
         }
     }
 

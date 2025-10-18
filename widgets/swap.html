@@ -1038,6 +1038,8 @@
 
         // Listen for wallet connection changes from parent dashboard
         window.addEventListener('message', (event) => {
+        // Validate message origin for security
+        if (!isValidMessageOrigin || !isValidMessageOrigin(event)) return;
             if (event.data.type === 'wallet_connected' && event.data.address) {
                 console.log('📨 Received wallet connection from parent:', event.data.address);
                 SwapWidget.walletAddress = event.data.address;

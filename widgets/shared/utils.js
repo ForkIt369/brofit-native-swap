@@ -654,6 +654,27 @@ function throttle(func, limit) {
 }
 
 /* ============================================================================
+   SECURITY UTILITIES
+   ========================================================================== */
+
+/**
+ * Validate postMessage origin for iframe communication
+ * @param {MessageEvent} event - The message event
+ * @param {string|string[]} allowedOrigins - Single origin or array of allowed origins (optional, defaults to window.location.origin)
+ * @returns {boolean} True if origin is valid
+ */
+function isValidMessageOrigin(event, allowedOrigins = null) {
+    // Default to same origin if no origins specified
+    const allowed = allowedOrigins || window.location.origin;
+
+    // Convert to array for easier handling
+    const origins = Array.isArray(allowed) ? allowed : [allowed];
+
+    // Check if event origin matches any allowed origin
+    return origins.some(origin => event.origin === origin);
+}
+
+/* ============================================================================
    COPY TO CLIPBOARD
    ========================================================================== */
 
@@ -753,6 +774,9 @@ if (typeof module !== 'undefined' && module.exports) {
         saveToStorage,
         loadFromStorage,
         removeFromStorage,
+
+        // Security
+        isValidMessageOrigin,
 
         // Error handling
         parseWeb3Error,

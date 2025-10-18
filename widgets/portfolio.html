@@ -636,6 +636,8 @@
              */
             listenForWalletUpdates() {
                 window.addEventListener('message', (event) => {
+        // Validate message origin for security
+        if (!isValidMessageOrigin || !isValidMessageOrigin(event)) return;
                     if (event.data.type === 'WALLET_CONNECTED') {
                         console.log('📨 Received wallet connected message:', event.data.address);
                         this.walletAddress = event.data.address;
