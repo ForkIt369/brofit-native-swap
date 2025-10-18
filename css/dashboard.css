@@ -479,6 +479,15 @@
     object-fit: contain;
 }
 
+.empty-state-icon {
+    font-size: 64px;
+    margin: 0 auto 16px;
+    opacity: 0.3;
+    line-height: 1;
+    display: block;
+    text-align: center;
+}
+
 .loading-avatar {
     width: 80px;
     height: auto;
