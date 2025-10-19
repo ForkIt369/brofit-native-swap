@@ -125,6 +125,32 @@
 
 .nav-label {
     line-height: 1;
+    position: relative;
+}
+
+.nav-tab-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.nav-tab-disabled:hover {
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.soon-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
+    color: white;
+    border-radius: 4px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
 }
 
 /* Wallet Info */
