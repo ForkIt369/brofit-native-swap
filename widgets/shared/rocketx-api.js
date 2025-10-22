@@ -5,9 +5,10 @@
  */
 
 class RocketXAPI {
-    constructor(apiKey) {
-        this.apiKey = apiKey;
-        this.baseURL = 'https://api.rocketx.exchange';
+    constructor(apiKey = null) {
+        // API key no longer needed - handled by backend!
+        this.apiKey = apiKey; // Keep for backwards compatibility
+        this.baseURL = ''; // Use relative URLs to call our backend
         this.cache = new Map();
         this.cacheTime = 30000; // 30 seconds
     }
@@ -18,13 +19,14 @@ class RocketXAPI {
 
     /**
      * Make HTTP request with error handling
+     * Now calls our backend API proxy (no API key needed!)
      */
     async _request(endpoint, options = {}) {
         const url = `${this.baseURL}${endpoint}`;
 
         const defaultHeaders = {
-            'X-API-KEY': this.apiKey,
             'Content-Type': 'application/json'
+            // API key removed - backend handles authentication!
         };
 
         try {
@@ -92,7 +94,7 @@ class RocketXAPI {
         const cacheKey = `tokens_${networkId || 'all'}`;
 
         return this._getCached(cacheKey, async () => {
-            const data = await this._request('/v1/tokens');
+            const data = await this._request('/api/rocketx/tokens?chainId=0x1&page=1&perPage=600');
 
             // Filter by network if specified
             if (networkId && data.tokens) {
@@ -134,22 +136,98 @@ class RocketXAPI {
         );
     }
 
+    /**
+     * Get token ID from RocketX API (CRITICAL for swap execution)
+     * RocketX /v1/swap requires token IDs, not contract addresses!
+     * @param {string} chainId - Chain ID in hex format (e.g., "0x1")
+     * @param {string} tokenAddressOrSymbol - Token contract address or symbol
+     * @returns {Promise<number>} RocketX internal token ID
+     */
+    async getTokenId(chainId, tokenAddressOrSymbol) {
+        const cacheKey = `tokenId_${chainId}_${tokenAddressOrSymbol.toLowerCase()}`;
+
+        // Check cache first
+        if (this.cache.has(cacheKey)) {
+            const cached = this.cache.get(cacheKey);
+            if (Date.now() - cached.timestamp < this.cacheTime) {
+                return cached.data;
+            }
+        }
+
+        try {
+            // Fetch tokens from backend with required query params
+            const queryParams = new URLSearchParams({
+                chainId: chainId,
+                page: '1',
+                perPage: '600', // Max allowed
+                keyword: tokenAddressOrSymbol
+            });
+
+            const response = await this._request(`/api/rocketx/tokens?${queryParams.toString()}`);
+            const tokens = response.tokens || [];
+
+            // Find exact match by address or symbol
+            const token = tokens.find(t =>
+                t.contract_address?.toLowerCase() === tokenAddressOrSymbol.toLowerCase() ||
+                t.token_symbol?.toLowerCase() === tokenAddressOrSymbol.toLowerCase()
+            );
+
+            if (!token) {
+                throw new Error(`Token not found: ${tokenAddressOrSymbol} on chain ${chainId}`);
+            }
+
+            // Cache the token ID
+            this.cache.set(cacheKey, {
+                data: token.id,
+                timestamp: Date.now()
+            });
+
+            return token.id;
+        } catch (error) {
+            console.error('Failed to get token ID:', error);
+            throw error;
+        }
+    }
+
     /* ========================================================================
        CHAIN ENDPOINTS
        ====================================================================== */
 
     /**
-     * Get all supported chains
+     * Get all supported chains from backend /api/rocketx/configs endpoint
+     * Returns 197 networks (not just 10 fallback chains)
+     * Backend caches this for 10 minutes to reduce API calls
      * @returns {Promise<Array>} List of chains
      */
     async getSupportedChains() {
         return this._getCached('chains', async () => {
             try {
-                const data = await this._request('/v1/supported-chains');
-                return data.chains || [];
+                const data = await this._request('/api/rocketx/configs');
+
+                // Parse supported_network array from configs response
+                const networks = (data.supported_network || [])
+                    .filter(n => n.enabled === 1)
+                    .map(n => ({
+                        id: n.id,
+                        name: n.name,
+                        chain_id: parseInt(n.chainId, 16), // Convert hex to decimal
+                        chainId: n.chainId, // Keep original hex format
+                        symbol: n.symbol,
+                        type: n.type,
+                        logo: n.logo,
+                        rpc_url: n.rpc_url,
+                        explorer: n.block_explorer_url,
+                        native_token: n.native_token,
+                        regex: n.regex,
+                        buy_enabled: n.buy_enabled,
+                        sell_enabled: n.sell_enabled
+                    }));
+
+                console.log(`Loaded ${networks.length} supported chains from RocketX`);
+                return networks;
             } catch (error) {
-                // Fallback to mock data if endpoint doesn't exist
-                console.warn('Using fallback chain data');
+                // Fallback to mock data if endpoint fails
+                console.warn('Failed to load chains from RocketX, using fallback data:', error.message);
                 return this._getFallbackChains();
             }
         });
@@ -188,43 +266,147 @@ class RocketXAPI {
        ====================================================================== */
 
     /**
-     * Get swap quotation
+     * Get swap quotation (POST request to /v1/quotation)
      * @param {Object} params - Quotation parameters
-     * @returns {Promise<Object>} Quote details with routes
+     * @param {string} params.fromTokenAddress - Source token address
+     * @param {string} params.toTokenAddress - Destination token address
+     * @param {string} params.amount - Amount in wei/smallest unit
+     * @param {string} params.fromTokenChainId - Source chain ID (hex format, e.g. "0x1")
+     * @param {string} params.toTokenChainId - Destination chain ID (hex format)
+     * @param {number} params.slippage - Slippage tolerance (default: 1)
+     * @param {string} params.referrer - Referrer address for revenue sharing (optional)
+     * @param {string} params.partnerId - Partner ID (optional)
+     * @returns {Promise<Object>} Quote details with routes, gas estimates, price impact
      */
     async getQuotation(params) {
         const {
-            fromToken,
-            toToken,
+            fromTokenAddress,
+            toTokenAddress,
             amount,
-            network = 'ethereum',
-            slippage = 0.5
+            fromTokenChainId,
+            toTokenChainId,
+            slippage = 1,
+            referrer = '0x0000000000000000000000000000000000000000',
+            partnerId = 'brofit'
         } = params;
 
-        const queryParams = new URLSearchParams({
-            fromToken,
-            toToken,
+        // Build POST payload (uses addresses for quotation)
+        const payload = {
+            fromTokenAddress,
+            toTokenAddress,
             amount,
-            network,
-            slippage: slippage.toString()
-        });
+            fromTokenChainId,
+            toTokenChainId,
+            slippage,
+            referrer,
+            partnerId
+        };
 
         // Don't cache quotes - they're time-sensitive
-        return this._request(`/v1/quotation?${queryParams.toString()}`);
+        return this._request('/api/rocketx/quote', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
     }
 
     /**
-     * Get swap status
-     * @param {string} txHash - Transaction hash
-     * @returns {Promise<Object>} Transaction status
+     * Get transaction status by requestId
+     * @param {string} requestId - Request ID from /v1/swap response
+     * @param {string} txId - Optional transaction hash for walletless swaps
+     * @returns {Promise<Object>} Transaction status with subState and commission info
      */
-    async getSwapStatus(txHash) {
+    async getSwapStatus(requestId, txId = null) {
         try {
-            return await this._request(`/v1/swap/status/${txHash}`);
+            const queryParams = new URLSearchParams({ requestId });
+            if (txId) {
+                queryParams.append('txId', txId);
+            }
+
+            const response = await this._request(`/api/rocketx/status?${queryParams.toString()}`);
+
+            // Response includes:
+            // - status: "pending" | "success" | "failed"
+            // - subState: transaction_pending | pending | approved | executed | withdrawal | withdraw_success | invalid
+            // - partnersCommission: Revenue sharing percentage (earn 70% of fees!)
+            // - originTransactionHash & destinationTransactionHash
+            // - originTransactionUrl & destinationTransactionUrl
+
+            return response;
         } catch (error) {
-            // Fallback: check on-chain via Web3
-            console.warn('Swap status endpoint unavailable, checking on-chain');
-            return { status: 'unknown', message: 'Status endpoint unavailable' };
+            console.error('Failed to get swap status:', error);
+            return { status: 'unknown', message: error.message };
+        }
+    }
+
+    /**
+     * Execute swap transaction (POST /v1/swap)
+     * CRITICAL: This endpoint requires token IDs, NOT contract addresses!
+     * Use getTokenId() to resolve addresses to IDs first.
+     *
+     * @param {Object} params - Swap parameters
+     * @param {string} params.fromTokenAddress - Source token address (will be resolved to ID)
+     * @param {string} params.toTokenAddress - Destination token address (will be resolved to ID)
+     * @param {string} params.fromTokenChainId - Source chain ID (hex format, e.g. "0x1")
+     * @param {string} params.toTokenChainId - Destination chain ID (hex format)
+     * @param {string} params.fromTokenAmount - Amount in wei/smallest unit
+     * @param {string} params.userAddress - User's wallet address
+     * @param {number} params.slippage - Slippage tolerance (default: 1)
+     * @param {string} params.referrer - Referrer address for revenue sharing (optional)
+     * @param {string} params.partnerId - Partner ID (optional)
+     * @returns {Promise<Object>} Swap response with requestId, transaction data, gas estimates
+     */
+    async executeSwap(params) {
+        const {
+            fromTokenAddress,
+            toTokenAddress,
+            fromTokenChainId,
+            toTokenChainId,
+            fromTokenAmount,
+            userAddress,
+            slippage = 1,
+            referrer = '0x0000000000000000000000000000000000000000', // TODO: Set your referrer address to earn 70% commission!
+            partnerId = 'brofit'
+        } = params;
+
+        try {
+            // Step 1: Resolve token addresses to RocketX internal token IDs
+            console.log('Resolving token IDs...');
+            const fromTokenId = await this.getTokenId(fromTokenChainId, fromTokenAddress);
+            const toTokenId = await this.getTokenId(toTokenChainId, toTokenAddress);
+
+            console.log(`Token IDs resolved: ${fromTokenAddress} -> ${fromTokenId}, ${toTokenAddress} -> ${toTokenId}`);
+
+            // Step 2: Build swap payload with token IDs (NOT addresses!)
+            const payload = {
+                fromTokenId: fromTokenId,
+                toTokenId: toTokenId,
+                fromTokenAmount: fromTokenAmount,
+                slippage: slippage,
+                userAddress: userAddress,
+                referrer: referrer,
+                partnerId: partnerId
+            };
+
+            console.log('Executing swap with payload:', payload);
+
+            // Step 3: Execute swap via backend POST /api/rocketx/swap
+            const response = await this._request('/api/rocketx/swap', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            // Response includes:
+            // - requestId: Use this to track transaction status via getSwapStatus()
+            // - Transaction data for signing
+            // - Gas estimates
+            // - Expected output amount
+
+            console.log('Swap executed successfully, requestId:', response.requestId);
+            return response;
+
+        } catch (error) {
+            console.error('Swap execution failed:', error);
+            throw error;
         }
     }
 
@@ -577,11 +759,11 @@ class RocketXAPI {
    SINGLETON INSTANCE
    ========================================================================== */
 
-// API key (⚠️ SECURITY WARNING: In production, use backend proxy)
-const API_KEY = '25de7b8a-5dbd-41d5-a9a5-e865462268a0'; // Updated Oct 17, 2025 - User's API key
+// ✅ API key removed! Now securely stored on backend (Vercel environment variables)
+// No API keys exposed to browser - all requests proxied through /api/rocketx/*
 
-// Create singleton instance
-const rocketxAPI = new RocketXAPI(API_KEY);
+// Create singleton instance (no API key needed!)
+const rocketxAPI = new RocketXAPI();
 
 /* ============================================================================
    EXPORT

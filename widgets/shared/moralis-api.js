@@ -11,6 +11,8 @@
    ========================================================================== */
 
 const MORALIS_CONFIG = {
+    // ⚠️ NOTE: API key still present for legacy functions (getNativeBalance, getTokenMetadata, etc.)
+    // Primary function (getWalletTokens) now uses backend proxy - API key not exposed for portfolio!
     API_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjM3MmE3NmNkLTRkZmYtNGI2OC05NTRiLWQwNWZiZTlmNTgzYyIsIm9yZ0lkIjoiNDQ3MzE4IiwidXNlcklkIjoiNDYwMjM2IiwidHlwZUlkIjoiYjFjY2Y1OWUtN2M3Mi00YjdlLWJkNTEtMjQzNmRmZDg2OTc2IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3NDczNTM2MDMsImV4cCI6NDkwMzExMzYwM30.d03rGvyBobwlLHYpGJcnnd3nAmWsBUfwZyIpeM-xSSQ', // Starter Plan - Updated Oct 17, 2025
     BASE_URL: 'https://deep-index.moralis.io/api/v2.2',
 
@@ -112,6 +114,7 @@ async function moralisRequest(endpoint, params = {}) {
 
 /**
  * Get all ERC20 tokens owned by an address
+ * Now calls our secure backend API proxy (no API key needed!)
  */
 async function getWalletTokens(address, chain = 'eth') {
     if (!address) throw new Error('Address is required');
@@ -121,10 +124,20 @@ async function getWalletTokens(address, chain = 'eth') {
     if (cached) return cached;
 
     try {
-        const data = await moralisRequest(`/wallets/${address}/tokens`, {
-            chain: chain
+        // Call backend API proxy instead of Moralis directly
+        const response = await fetch(`/api/moralis/wallets/${address}/tokens?chain=${chain}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+                // No API key needed - backend handles authentication!
+            }
         });
 
+        if (!response.ok) {
+            throw new Error(`Backend API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
         cacheData(cacheKey, data);
         return data;
     } catch (error) {

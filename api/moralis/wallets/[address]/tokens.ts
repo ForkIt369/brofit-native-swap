@@ -45,7 +45,7 @@ export default async function handler(request: Request) {
 
   try {
     // Get API key from environment
-    const apiKey = process.env.MORALIS_API_KEY;
+    const apiKey = process.env.MORALIS_API_KEY?.trim();
     if (!apiKey) {
       console.error('MORALIS_API_KEY not configured');
       return errorResponse('Server configuration error', 500, origin);

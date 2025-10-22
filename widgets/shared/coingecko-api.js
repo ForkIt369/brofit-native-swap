@@ -11,6 +11,8 @@
    ========================================================================== */
 
 const COINGECKO_CONFIG = {
+    // ⚠️ NOTE: API key still present for legacy functions (getCoinData, searchCoin, etc.)
+    // Primary function (getSimplePrice) now uses backend proxy - API key not exposed for prices!
     API_KEY: 'CG-W6Sr7Nw6HLqTGC1s2LEFLKZw',
     BASE_URL: 'https://api.coingecko.com/api/v3',
     CACHE_PREFIX: 'brofit_cg_',
@@ -267,6 +269,7 @@ async function getCoinLogo(coinId, size = 'small') {
 
 /**
  * Get simple price for coin(s)
+ * Now calls our secure backend API proxy (no API key needed!)
  */
 async function getSimplePrice(coinIds, vsCurrencies = ['usd']) {
     if (!coinIds || coinIds.length === 0) return {};
@@ -276,14 +279,23 @@ async function getSimplePrice(coinIds, vsCurrencies = ['usd']) {
     if (cached) return cached;
 
     try {
-        const data = await coinGeckoRequest('/simple/price', {
-            ids: Array.isArray(coinIds) ? coinIds.join(',') : coinIds,
-            vs_currencies: Array.isArray(vsCurrencies) ? vsCurrencies.join(',') : vsCurrencies,
-            include_24hr_change: true,
-            include_market_cap: true,
-            include_24hr_vol: true
+        // Call backend API proxy instead of CoinGecko directly
+        const ids = Array.isArray(coinIds) ? coinIds.join(',') : coinIds;
+        const currencies = Array.isArray(vsCurrencies) ? vsCurrencies.join(',') : vsCurrencies;
+
+        const response = await fetch(`/api/coingecko/simple/price?ids=${ids}&vs_currencies=${currencies}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+                // No API key needed - backend handles authentication!
+            }
         });
 
+        if (!response.ok) {
+            throw new Error(`Backend API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
         cacheData(cacheKey, data, COINGECKO_CONFIG.CACHE_DURATION);
         return data;
     } catch (error) {

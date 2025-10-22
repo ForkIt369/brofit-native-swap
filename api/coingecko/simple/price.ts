@@ -27,8 +27,8 @@ export default async function handler(request: Request) {
   }
 
   try {
-    // Get API key from environment
-    const apiKey = process.env.COINGECKO_API_KEY;
+    // Get API key from environment (trim any whitespace/newlines)
+    const apiKey = process.env.COINGECKO_API_KEY?.trim();
     if (!apiKey) {
       console.error('COINGECKO_API_KEY not configured');
       return errorResponse('Server configuration error', 500, origin);

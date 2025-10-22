@@ -1,12 +1,24 @@
 /**
- * RocketX Quote Edge Function
- * Proxies quote requests to RocketX API with server-side API key
- * Supports both swap and bridge quotations
+ * RocketX Quotation Edge Function
+ * Proxies POST /v1/quotation to get swap/bridge quotes
+ * Uses addresses (not IDs) for quotation requests
+ *
+ * Required params:
+ * - fromTokenAddress: Source token address
+ * - toTokenAddress: Destination token address
+ * - amount: Amount in wei/smallest unit
+ * - fromTokenChainId: Source chain ID (hex format, e.g. "0x1")
+ * - toTokenChainId: Destination chain ID (hex format)
+ *
+ * Optional params:
+ * - slippage: Slippage tolerance (default: 1)
+ * - referrer: Referrer address for revenue sharing
+ * - partnerId: Partner ID (default: "brofit")
  */
 
 import { handlePreflight, jsonResponse, errorResponse } from '../utils/cors';
 import { fetchJSON } from '../utils/fetchWithTimeout';
-import { isValidAddress, isValidAmount, isValidChainId, isSupportedChain } from '../utils/validate';
+import { isValidAddress } from '../utils/validate';
 
 export const config = {
   runtime: 'edge',
@@ -15,14 +27,14 @@ export const config = {
 const ROCKETX_BASE_URL = 'https://api.rocketx.exchange';
 
 interface QuoteRequest {
-  fromToken: string;
-  toToken: string;
+  fromTokenAddress: string;
+  toTokenAddress: string;
   amount: string | number;
-  fromNetwork?: string;
-  toNetwork?: string;
-  network?: string;
+  fromTokenChainId: string;
+  toTokenChainId: string;
   slippage?: number;
-  type?: 'swap' | 'bridge';
+  referrer?: string;
+  partnerId?: string;
 }
 
 export default async function handler(request: Request) {
@@ -33,113 +45,79 @@ export default async function handler(request: Request) {
     return handlePreflight(request);
   }
 
-  // Only allow GET and POST
-  if (request.method !== 'GET' && request.method !== 'POST') {
-    return errorResponse('Method not allowed', 405, origin);
+  // Only allow POST (per Postman documentation)
+  if (request.method !== 'POST') {
+    return errorResponse('Method not allowed - use POST', 405, origin);
   }
 
   try {
     // Get API key from environment
-    const apiKey = process.env.ROCKETX_API_KEY;
+    const apiKey = process.env.ROCKETX_API_KEY?.trim();
     if (!apiKey) {
       console.error('ROCKETX_API_KEY not configured');
       return errorResponse('Server configuration error', 500, origin);
     }
 
-    // Parse request parameters
-    let params: QuoteRequest;
-
-    if (request.method === 'POST') {
-      params = await request.json();
-    } else {
-      const url = new URL(request.url);
-      params = {
-        fromToken: url.searchParams.get('fromToken') || '',
-        toToken: url.searchParams.get('toToken') || '',
-        amount: url.searchParams.get('amount') || '',
-        fromNetwork: url.searchParams.get('fromNetwork') || undefined,
-        toNetwork: url.searchParams.get('toNetwork') || undefined,
-        network: url.searchParams.get('network') || undefined,
-        slippage: parseFloat(url.searchParams.get('slippage') || '0.5'),
-        type: (url.searchParams.get('type') as 'swap' | 'bridge') || 'swap'
-      };
-    }
+    // Parse request body
+    const params: QuoteRequest = await request.json();
 
     // Validate required parameters
-    if (!params.fromToken || !params.toToken || !params.amount) {
-      return errorResponse('Missing required parameters: fromToken, toToken, amount', 400, origin);
+    if (!params.fromTokenAddress || !params.toTokenAddress || !params.amount || !params.fromTokenChainId || !params.toTokenChainId) {
+      return errorResponse(
+        'Missing required parameters: fromTokenAddress, toTokenAddress, amount, fromTokenChainId, toTokenChainId',
+        400,
+        origin
+      );
     }
 
-    // Validate amount
-    if (!isValidAmount(params.amount)) {
-      return errorResponse('Invalid amount format', 400, origin);
+    // Validate token addresses
+    if (!isValidAddress(params.fromTokenAddress)) {
+      return errorResponse('Invalid fromTokenAddress format', 400, origin);
+    }
+    if (!isValidAddress(params.toTokenAddress)) {
+      return errorResponse('Invalid toTokenAddress format', 400, origin);
     }
 
-    // Validate token addresses if they're addresses (not symbols)
-    if (params.fromToken.startsWith('0x') && !isValidAddress(params.fromToken)) {
-      return errorResponse('Invalid fromToken address', 400, origin);
-    }
-    if (params.toToken.startsWith('0x') && !isValidAddress(params.toToken)) {
-      return errorResponse('Invalid toToken address', 400, origin);
+    // Validate referrer address if provided
+    if (params.referrer && !isValidAddress(params.referrer)) {
+      return errorResponse('Invalid referrer address format', 400, origin);
     }
 
-    // Determine if this is a swap or bridge based on networks
-    const isBridge = params.type === 'bridge' || (params.fromNetwork && params.toNetwork && params.fromNetwork !== params.toNetwork);
+    // Build quotation payload (uses addresses)
+    const quotationPayload = {
+      fromTokenAddress: params.fromTokenAddress,
+      toTokenAddress: params.toTokenAddress,
+      amount: params.amount.toString(),
+      fromTokenChainId: params.fromTokenChainId,
+      toTokenChainId: params.toTokenChainId,
+      slippage: params.slippage || 1,
+      referrer: params.referrer || '0x0000000000000000000000000000000000000000',
+      partnerId: params.partnerId || 'brofit'
+    };
 
-    let rocketxUrl: string;
-    let requestBody: any;
+    console.log('💡 Fetching quotation:', {
+      from: params.fromTokenAddress.substring(0, 10) + '...',
+      to: params.toTokenAddress.substring(0, 10) + '...',
+      fromChain: params.fromTokenChainId,
+      toChain: params.toTokenChainId
+    });
 
-    if (isBridge) {
-      // Bridge quotation (POST request)
-      rocketxUrl = `${ROCKETX_BASE_URL}/v1/bridge/quotation`;
-      requestBody = {
-        fromToken: params.fromToken,
-        toToken: params.toToken,
-        amount: params.amount.toString(),
-        fromNetwork: params.fromNetwork || params.network || 'ethereum',
-        toNetwork: params.toNetwork || 'ethereum',
-        slippage: params.slippage || 1.0
-      };
+    // Fetch quotation from RocketX (POST to /v1/quotation)
+    const data = await fetchJSON(`${ROCKETX_BASE_URL}/v1/quotation`, {
+      method: 'POST',
+      headers: {
+        'x-api': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(quotationPayload),
+      timeout: 15000,
+      retries: 1,
+      retryOn: [429, 500, 502, 503, 504]
+    });
 
-      const data = await fetchJSON(rocketxUrl, {
-        method: 'POST',
-        headers: {
-          'X-API-KEY': apiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody),
-        timeout: 15000,
-        retries: 1,
-        retryOn: [429, 500, 502, 503, 504]
-      });
+    console.log('✅ Quotation fetched successfully');
 
-      return jsonResponse(data, 200, origin);
-
-    } else {
-      // Swap quotation (GET request)
-      const queryParams = new URLSearchParams({
-        fromToken: params.fromToken,
-        toToken: params.toToken,
-        amount: params.amount.toString(),
-        network: params.network || params.fromNetwork || 'ethereum',
-        slippage: (params.slippage || 0.5).toString()
-      });
-
-      rocketxUrl = `${ROCKETX_BASE_URL}/v1/quotation?${queryParams.toString()}`;
-
-      const data = await fetchJSON(rocketxUrl, {
-        method: 'GET',
-        headers: {
-          'X-API-KEY': apiKey,
-          'Content-Type': 'application/json'
-        },
-        timeout: 15000,
-        retries: 1,
-        retryOn: [429, 500, 502, 503, 504]
-      });
-
-      return jsonResponse(data, 200, origin);
-    }
+    return jsonResponse(data, 200, origin);
 
   } catch (error: any) {
     console.error('RocketX quote error:', error);
