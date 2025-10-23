@@ -102,8 +102,8 @@ export default async function handler(request: Request) {
       toChain: params.toTokenChainId
     });
 
-    // Fetch quotation from RocketX (POST to /v1/quote - corrected endpoint)
-    const data = await fetchJSON(`${ROCKETX_BASE_URL}/v1/quote`, {
+    // Fetch quotation from RocketX (POST to /rocketx/v1/quote - testing new path)
+    const data = await fetchJSON(`${ROCKETX_BASE_URL}/rocketx/v1/quote`, {
       method: 'POST',
       headers: {
         'x-api': apiKey,
