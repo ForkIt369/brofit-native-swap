@@ -111,7 +111,7 @@ export default async function handler(request: Request) {
     const data = await fetchJSON(`${ROCKETX_BASE_URL}/v1/quotation?${queryParams.toString()}`, {
       method: 'GET',
       headers: {
-        'x-api': apiKey,
+        'x-api-key': apiKey,  // NOTE: quotation uses 'x-api-key', not 'x-api'
         'Content-Type': 'application/json'
       },
       timeout: 15000,
