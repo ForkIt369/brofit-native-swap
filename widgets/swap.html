@@ -536,13 +536,76 @@
     <!-- Swap Logic -->
     <script>
         /* ====================================================================
+           TOKEN CONFIGURATION WITH ADDRESSES
+           ================================================================== */
+
+        const TOKEN_CONFIG = {
+            'ETH': {
+                symbol: 'ETH',
+                name: 'Ethereum',
+                decimals: 18,
+                address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // Native ETH placeholder
+                chainId: '0x1', // Ethereum mainnet
+                coingeckoId: 'ethereum'
+            },
+            'WETH': {
+                symbol: 'WETH',
+                name: 'Wrapped Ether',
+                decimals: 18,
+                address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+                chainId: '0x1',
+                coingeckoId: 'weth'
+            },
+            'USDT': {
+                symbol: 'USDT',
+                name: 'Tether USD',
+                decimals: 6,
+                address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+                chainId: '0x1',
+                coingeckoId: 'tether'
+            },
+            'USDC': {
+                symbol: 'USDC',
+                name: 'USD Coin',
+                decimals: 6,
+                address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+                chainId: '0x1',
+                coingeckoId: 'usd-coin'
+            },
+            'DAI': {
+                symbol: 'DAI',
+                name: 'Dai Stablecoin',
+                decimals: 18,
+                address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+                chainId: '0x1',
+                coingeckoId: 'dai'
+            },
+            'WBTC': {
+                symbol: 'WBTC',
+                name: 'Wrapped Bitcoin',
+                decimals: 8,
+                address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
+                chainId: '0x1',
+                coingeckoId: 'wrapped-bitcoin'
+            },
+            'BTC': {
+                symbol: 'BTC',
+                name: 'Bitcoin',
+                decimals: 8,
+                address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', // Use WBTC on Ethereum
+                chainId: '0x1',
+                coingeckoId: 'bitcoin'
+            }
+        };
+
+        /* ====================================================================
            SWAP STATE & CONFIGURATION
            ================================================================== */
 
         const SwapWidget = {
             // State
-            fromToken: { symbol: 'ETH', name: 'Ethereum', decimals: 18 },
-            toToken: { symbol: 'USDT', name: 'Tether USD', decimals: 6 },
+            fromToken: TOKEN_CONFIG['ETH'],
+            toToken: TOKEN_CONFIG['USDT'],
             fromAmount: '',
             toAmount: '',
             walletAddress: null,
@@ -789,22 +852,47 @@
                 if (typeof rocketxAPI !== 'undefined') {
                     try {
                         console.log('📊 Fetching quote from RocketX API...');
-                        const apiQuote = await rocketxAPI.getQuotation({
-                            fromToken: this.fromToken.address || this.fromToken.symbol,
-                            toToken: this.toToken.address || this.toToken.symbol,
-                            amount: this.fromAmount,
-                            network: 'ethereum',
-                            slippage: 0.5
+
+                        // Convert amount to wei (smallest unit)
+                        const amountInWei = this.convertToWei(this.fromAmount, this.fromToken.decimals);
+
+                        console.log('📊 RocketX request:', {
+                            from: `${this.fromToken.symbol} (${this.fromToken.address})`,
+                            to: `${this.toToken.symbol} (${this.toToken.address})`,
+                            amount: `${this.fromAmount} = ${amountInWei} wei`,
+                            chainId: this.fromToken.chainId
                         });
+
+                        // Call RocketX with proper parameters
+                        const apiQuote = await rocketxAPI.getQuotation({
+                            fromTokenAddress: this.fromToken.address,
+                            toTokenAddress: this.toToken.address,
+                            amount: amountInWei,
+                            fromTokenChainId: this.fromToken.chainId,
+                            toTokenChainId: this.toToken.chainId,
+                            slippage: 1, // 1% slippage
+                            partnerId: 'brofit'
+                        });
+
+                        console.log('✅ RocketX raw response:', apiQuote);
+
+                        // Convert output amount from wei to human-readable
+                        const outputAmount = this.convertFromWei(
+                            apiQuote.toTokenAmount || apiQuote.outputAmount || '0',
+                            this.toToken.decimals
+                        );
+
+                        // Calculate rate
+                        const rate = parseFloat(outputAmount) / parseFloat(this.fromAmount);
 
                         // Format API response
                         const quote = {
-                            outputAmount: apiQuote.toTokenAmount || apiQuote.outputAmount || '0',
-                            rate: apiQuote.rate || `1 ${this.fromToken.symbol} = ${apiQuote.price || '?'} ${this.toToken.symbol}`,
+                            outputAmount: parseFloat(outputAmount).toFixed(6),
+                            rate: `1 ${this.fromToken.symbol} = ${rate.toLocaleString(undefined, {maximumFractionDigits: 2})} ${this.toToken.symbol}`,
                             priceImpact: apiQuote.priceImpact || '< 0.01%',
                             networkFee: apiQuote.gasFee || apiQuote.networkFee || '~$5.00',
-                            route: apiQuote.protocol || apiQuote.route || 'Best Route',
-                            minReceived: apiQuote.minReceived || `${(parseFloat(apiQuote.toTokenAmount || 0) * 0.995).toFixed(6)} ${this.toToken.symbol}`
+                            route: apiQuote.protocol || apiQuote.route || 'RocketX Best Route',
+                            minReceived: apiQuote.minReceived || `${(parseFloat(outputAmount) * 0.99).toFixed(6)} ${this.toToken.symbol}`
                         };
 
                         console.log('✅ Quote received from RocketX:', quote);
@@ -820,6 +908,34 @@
                 }
             },
 
+            /**
+             * Convert human-readable amount to wei (smallest unit)
+             */
+            convertToWei(amount, decimals) {
+                const num = parseFloat(amount);
+                if (isNaN(num) || num <= 0) return '0';
+
+                // Multiply by 10^decimals
+                const multiplier = Math.pow(10, decimals);
+                const wei = Math.floor(num * multiplier);
+
+                return wei.toString();
+            },
+
+            /**
+             * Convert wei (smallest unit) to human-readable amount
+             */
+            convertFromWei(amountInWei, decimals) {
+                const num = parseFloat(amountInWei);
+                if (isNaN(num) || num <= 0) return '0';
+
+                // Divide by 10^decimals
+                const divisor = Math.pow(10, decimals);
+                const readable = num / divisor;
+
+                return readable.toString();
+            },
+
             async getMockQuote() {
                 const amount = parseFloat(this.fromAmount);
 
@@ -827,19 +943,9 @@
                     // ✅ Use LIVE prices from CoinGecko backend API instead of hardcoded fake data
                     console.log('📊 Fetching live price from CoinGecko fallback...');
 
-                    // Map token symbols to CoinGecko IDs
-                    const coinGeckoIds = {
-                        'ETH': 'ethereum',
-                        'BTC': 'bitcoin',
-                        'USDT': 'tether',
-                        'USDC': 'usd-coin',
-                        'DAI': 'dai',
-                        'WETH': 'weth',
-                        'WBTC': 'wrapped-bitcoin'
-                    };
-
-                    const fromCoinId = coinGeckoIds[this.fromToken.symbol] || 'ethereum';
-                    const toCoinId = coinGeckoIds[this.toToken.symbol] || 'tether';
+                    // Use coingeckoId from token config
+                    const fromCoinId = this.fromToken.coingeckoId || 'ethereum';
+                    const toCoinId = this.toToken.coingeckoId || 'tether';
 
                     const response = await fetch(`/api/coingecko/simple/price?ids=${fromCoinId},${toCoinId}&vs_currencies=usd`);
 
