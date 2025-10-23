@@ -130,6 +130,7 @@ curl https://brofit-native-swap.vercel.app/api/rocketx/tokens?chainId=0x1
 |----------|--------|--------|-------|
 | `/v1/quotation` | POST | ❌ 404 | "Cannot POST /v1/quotation" |
 | `/v1/quote` | POST | ❌ 404 | "Cannot POST /v1/quote" |
+| `/rocketx/v1/quote` | POST | ❌ 404 | "Cannot POST /rocketx/v1/quote" |
 
 **Evidence**:
 ```javascript
@@ -168,6 +169,8 @@ POST {
    - Error: "Cannot POST /v1/quotation"
    - Tried `/v1/quotation` → 404
    - Tried `/v1/quote` → 404
+   - Tried `/rocketx/v1/quote` → 404 (based on Postman docs showing `/rocketx/v1/transactionHistory`)
+   - **Path investigation**: RocketX uses `/v1/` for general APIs and `/rocketx/v1/` for transaction APIs, but neither has a quotation endpoint
 
 **Possible Reasons**:
 - RocketX doesn't expose public quotation endpoint

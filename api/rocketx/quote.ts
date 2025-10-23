@@ -102,8 +102,10 @@ export default async function handler(request: Request) {
       toChain: params.toTokenChainId
     });
 
-    // Fetch quotation from RocketX (POST to /rocketx/v1/quote - testing new path)
-    const data = await fetchJSON(`${ROCKETX_BASE_URL}/rocketx/v1/quote`, {
+    // Fetch quotation from RocketX (POST to /v1/quote)
+    // NOTE: This endpoint returns 404 - RocketX does not expose public quotation API
+    // Both /v1/quote and /rocketx/v1/quote return 404
+    const data = await fetchJSON(`${ROCKETX_BASE_URL}/v1/quote`, {
       method: 'POST',
       headers: {
         'x-api': apiKey,
