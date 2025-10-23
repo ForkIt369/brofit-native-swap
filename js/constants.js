@@ -6,7 +6,7 @@
 /**
  * Notification Durations (milliseconds)
  */
-export const NOTIFICATION_DURATION = {
+const NOTIFICATION_DURATION = {
     SHORT: 2000,      // 2 seconds - Quick messages
     MEDIUM: 3000,     // 3 seconds - Standard messages
     LONG: 5000,       // 5 seconds - Errors and important info
@@ -17,7 +17,7 @@ export const NOTIFICATION_DURATION = {
 /**
  * API Timeouts (milliseconds)
  */
-export const API_TIMEOUT = {
+const API_TIMEOUT = {
     PORTFOLIO: 60000,  // 60 seconds - Portfolio data loading
     QUOTE: 30000,      // 30 seconds - Swap/bridge quotes
     TRANSACTION: 120000 // 120 seconds - Transaction completion
@@ -26,7 +26,7 @@ export const API_TIMEOUT = {
 /**
  * Cache Durations (milliseconds)
  */
-export const CACHE_DURATION = {
+const CACHE_DURATION = {
     SHORT: 30 * 1000,          // 30 seconds - Volatile data (balances)
     MEDIUM: 5 * 60 * 1000,     // 5 minutes - Semi-static data (prices)
     LONG: 10 * 60 * 1000,      // 10 minutes - Static data (metadata)
@@ -37,7 +37,7 @@ export const CACHE_DURATION = {
 /**
  * Debounce Delays (milliseconds)
  */
-export const DEBOUNCE_DELAY = {
+const DEBOUNCE_DELAY = {
     SEARCH: 300,       // 300ms - Search input
     INPUT: 500,        // 500ms - Form inputs
     STORAGE: 500,      // 500ms - localStorage saves
@@ -47,7 +47,7 @@ export const DEBOUNCE_DELAY = {
 /**
  * UI Z-Index Layers
  */
-export const Z_INDEX = {
+const Z_INDEX = {
     BASE: 1,
     DROPDOWN: 1000,
     MODAL: 9000,
@@ -59,7 +59,7 @@ export const Z_INDEX = {
 /**
  * Transaction Limits
  */
-export const TRANSACTION_LIMITS = {
+const TRANSACTION_LIMITS = {
     MAX_HISTORY: 50,    // Maximum transactions to store in history
     MAX_DISPLAY: 5      // Maximum recent transactions to display
 };
@@ -67,7 +67,7 @@ export const TRANSACTION_LIMITS = {
 /**
  * Portfolio Display Limits
  */
-export const PORTFOLIO_LIMITS = {
+const PORTFOLIO_LIMITS = {
     TOP_HOLDINGS: 3,    // Top holdings to display on dashboard
     MAX_TOKENS: 100     // Maximum tokens to fetch per chain
 };
@@ -75,7 +75,7 @@ export const PORTFOLIO_LIMITS = {
 /**
  * Supported Blockchain Networks
  */
-export const SUPPORTED_CHAINS = {
+const SUPPORTED_CHAINS = {
     COUNT: 10,
     BLOCKCHAINS: 6
 };
@@ -83,7 +83,7 @@ export const SUPPORTED_CHAINS = {
 /**
  * Animation Durations (milliseconds)
  */
-export const ANIMATION_DURATION = {
+const ANIMATION_DURATION = {
     FAST: 200,          // 200ms - Quick transitions
     MEDIUM: 300,        // 300ms - Standard animations
     SLOW: 500           // 500ms - Deliberate animations

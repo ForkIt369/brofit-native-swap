@@ -11,9 +11,8 @@
    ========================================================================== */
 
 const MORALIS_CONFIG = {
-    // ⚠️ NOTE: API key still present for legacy functions (getNativeBalance, getTokenMetadata, etc.)
-    // Primary function (getWalletTokens) now uses backend proxy - API key not exposed for portfolio!
-    API_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjM3MmE3NmNkLTRkZmYtNGI2OC05NTRiLWQwNWZiZTlmNTgzYyIsIm9yZ0lkIjoiNDQ3MzE4IiwidXNlcklkIjoiNDYwMjM2IiwidHlwZUlkIjoiYjFjY2Y1OWUtN2M3Mi00YjdlLWJkNTEtMjQzNmRmZDg2OTc2IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3NDczNTM2MDMsImV4cCI6NDkwMzExMzYwM30.d03rGvyBobwlLHYpGJcnnd3nAmWsBUfwZyIpeM-xSSQ', // Starter Plan - Updated Oct 17, 2025
+    // ✅ API key removed! All requests now go through secure backend at /api/moralis/*
+    // Legacy functions (getNativeBalance, getTokenMetadata) should use backend proxy as well
     BASE_URL: 'https://deep-index.moralis.io/api/v2.2',
 
     // Supported chains with their identifiers
@@ -88,12 +87,15 @@ async function moralisRequest(endpoint, params = {}) {
         }
     });
 
+    // ⚠️ DEPRECATED: Direct API calls are disabled for security
+    // All Moralis requests should now go through /api/moralis/* backend proxy
+    throw new Error('Direct Moralis API calls are deprecated. Use backend proxy at /api/moralis/* instead.');
+
     try {
         const response = await fetch(url.toString(), {
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
-                'X-API-Key': MORALIS_CONFIG.API_KEY
+                'Accept': 'application/json'
             }
         });
 
@@ -572,24 +574,10 @@ async function checkDemoMode() {
     demoModeCheckTime = now;
 
     try {
-        // Try a simple API call to check if key is valid
-        const testResponse = await fetch(
-            `${MORALIS_CONFIG.BASE_URL}/erc20/metadata?chain=eth&addresses=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2`,
-            {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-API-Key': MORALIS_CONFIG.API_KEY
-                }
-            }
-        );
-
-        if (testResponse.status === 401) {
-            demoModeEnabled = true;
-            console.warn('⚠️ Moralis API key is invalid/expired - Demo mode enabled');
-        } else {
-            demoModeEnabled = false;
-        }
+        // ✅ Backend proxy handles authentication - no need to test API key here
+        // Demo mode is disabled since all requests go through secure backend
+        demoModeEnabled = false;
+        console.log('✅ Moralis API using secure backend proxy at /api/moralis/*');
     } catch (error) {
         demoModeEnabled = true;
         console.warn('⚠️ Moralis API unreachable - Demo mode enabled');

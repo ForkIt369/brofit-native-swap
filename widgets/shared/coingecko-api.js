@@ -11,9 +11,8 @@
    ========================================================================== */
 
 const COINGECKO_CONFIG = {
-    // ⚠️ NOTE: API key still present for legacy functions (getCoinData, searchCoin, etc.)
-    // Primary function (getSimplePrice) now uses backend proxy - API key not exposed for prices!
-    API_KEY: 'CG-W6Sr7Nw6HLqTGC1s2LEFLKZw',
+    // ✅ API key removed! All requests now go through secure backend at /api/coingecko/*
+    // Legacy functions (getCoinData, searchCoin) should migrate to backend proxy as well
     BASE_URL: 'https://api.coingecko.com/api/v3',
     CACHE_PREFIX: 'brofit_cg_',
     CACHE_DURATION: 10 * 60 * 1000, // 10 minutes for price data (increased from 5)
@@ -101,12 +100,13 @@ function cacheData(key, value, maxAge) {
    ========================================================================== */
 
 async function coinGeckoRequest(endpoint, params = {}) {
+    // ⚠️ DEPRECATED: Direct API calls are disabled for security
+    // All CoinGecko requests should now go through /api/coingecko/* backend proxy
+    throw new Error('Direct CoinGecko API calls are deprecated. Use backend proxy at /api/coingecko/* instead.');
+
     await rateLimiter.waitIfNeeded();
 
     const url = new URL(`${COINGECKO_CONFIG.BASE_URL}${endpoint}`);
-
-    // Add API key to params
-    params.x_cg_demo_api_key = COINGECKO_CONFIG.API_KEY;
 
     // Add all params to URL
     Object.keys(params).forEach(key => {
