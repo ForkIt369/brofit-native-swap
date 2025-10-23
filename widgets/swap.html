@@ -521,6 +521,14 @@
                 <span class="detail-label">Minimum Received</span>
                 <span class="detail-value positive" id="minReceived">2,985 USDT</span>
             </div>
+            <div class="detail-row" id="savingsRow" style="display: none;">
+                <span class="detail-label">Savings vs Worst Route</span>
+                <span class="detail-value positive" id="swapSavings">$0.00</span>
+            </div>
+            <div class="detail-row" id="timeRow" style="display: none;">
+                <span class="detail-label">Estimated Time</span>
+                <span class="detail-value" id="swapTime">~50s</span>
+            </div>
         </div>
 
         <!-- Swap Button -->
@@ -596,6 +604,26 @@
                 chainId: '0x1',
                 coingeckoId: 'bitcoin'
             }
+        };
+
+        /**
+         * Network name mapper - converts hex chainIds to RocketX network names
+         * Based on RocketX Telegram support examples
+         */
+        const NETWORK_MAP = {
+            '0x1': 'ethereum',
+            '0x38': 'binance',
+            '0x89': 'polygon',
+            '0xa': 'optimism',
+            '0x2105': 'Base Chain',  // Base (can have spaces!)
+            '0xa4b1': 'arbitrum',
+            '0x144': 'zksync',
+            '0xe708': 'linea',
+            '0xa86a': 'avalanche',
+            '0xfa': 'fantom',
+            '0x64': 'gnosis',
+            '0x13881': 'polygon_mumbai',
+            '0xaa36a7': 'sepolia'
         };
 
         /* ====================================================================
@@ -837,6 +865,21 @@
                     document.getElementById('swapRoute').textContent = quote.route;
                     document.getElementById('minReceived').textContent = quote.minReceived;
 
+                    // Show RocketX-specific fields if available
+                    if (quote.savings) {
+                        document.getElementById('swapSavings').textContent = quote.savings;
+                        document.getElementById('savingsRow').style.display = 'flex';
+                    } else {
+                        document.getElementById('savingsRow').style.display = 'none';
+                    }
+
+                    if (quote.estimatedTime) {
+                        document.getElementById('swapTime').textContent = quote.estimatedTime;
+                        document.getElementById('timeRow').style.display = 'flex';
+                    } else {
+                        document.getElementById('timeRow').style.display = 'none';
+                    }
+
                     // Show details
                     document.getElementById('swapDetails').style.display = 'block';
 
@@ -848,62 +891,88 @@
             },
 
             async fetchSwapQuoteWithAPI() {
-                // Try to use real RocketX API
-                if (typeof rocketxAPI !== 'undefined') {
-                    try {
-                        console.log('📊 Fetching quote from RocketX API...');
+                try {
+                    console.log('📊 Fetching quotes from RocketX quotation API...');
 
-                        // Convert amount to wei (smallest unit)
-                        const amountInWei = this.convertToWei(this.fromAmount, this.fromToken.decimals);
+                    // Map chainIds to network names
+                    const fromNetwork = NETWORK_MAP[this.fromToken.chainId] || 'ethereum';
+                    const toNetwork = NETWORK_MAP[this.toToken.chainId] || 'ethereum';
 
-                        console.log('📊 RocketX request:', {
-                            from: `${this.fromToken.symbol} (${this.fromToken.address})`,
-                            to: `${this.toToken.symbol} (${this.toToken.address})`,
-                            amount: `${this.fromAmount} = ${amountInWei} wei`,
-                            chainId: this.fromToken.chainId
-                        });
+                    // RocketX uses human-readable amounts, not wei
+                    const amount = this.fromAmount;
 
-                        // Call RocketX with proper parameters
-                        const apiQuote = await rocketxAPI.getQuotation({
-                            fromTokenAddress: this.fromToken.address,
-                            toTokenAddress: this.toToken.address,
-                            amount: amountInWei,
-                            fromTokenChainId: this.fromToken.chainId,
-                            toTokenChainId: this.toToken.chainId,
-                            slippage: 1, // 1% slippage
-                            partnerId: 'brofit'
-                        });
+                    // For native tokens (ETH, BNB, etc), use lowercase address
+                    const fromToken = this.fromToken.address.toLowerCase();
+                    const toToken = this.toToken.address.toLowerCase();
 
-                        console.log('✅ RocketX raw response:', apiQuote);
+                    console.log('📊 RocketX quotation request:', {
+                        from: `${this.fromToken.symbol} on ${fromNetwork}`,
+                        to: `${this.toToken.symbol} on ${toNetwork}`,
+                        amount: amount,
+                        fromToken: fromToken,
+                        toToken: toToken
+                    });
 
-                        // Convert output amount from wei to human-readable
-                        const outputAmount = this.convertFromWei(
-                            apiQuote.toTokenAmount || apiQuote.outputAmount || '0',
-                            this.toToken.decimals
+                    // Call new GET quotation endpoint
+                    const response = await fetch(
+                        `/api/rocketx/quotation?` +
+                        `fromToken=${encodeURIComponent(fromToken)}` +
+                        `&fromNetwork=${encodeURIComponent(fromNetwork)}` +
+                        `&toToken=${encodeURIComponent(toToken)}` +
+                        `&toNetwork=${encodeURIComponent(toNetwork)}` +
+                        `&amount=${encodeURIComponent(amount)}` +
+                        `&slippage=1`
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(`RocketX quotation API error: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+
+                    console.log('✅ RocketX quotation response:', data);
+
+                    // Check if we have quotes
+                    if (!data.quotes || data.quotes.length === 0) {
+                        throw new Error('No quotes available from RocketX');
+                    }
+
+                    // Filter only allowed transactions and sort by savings (best first)
+                    const validQuotes = data.quotes
+                        .filter(q => q.isTxnAllowed === true)
+                        .sort((a, b) =>
+                            (b.additionalInfo?.savingUsd || 0) -
+                            (a.additionalInfo?.savingUsd || 0)
                         );
 
-                        // Calculate rate
-                        const rate = parseFloat(outputAmount) / parseFloat(this.fromAmount);
-
-                        // Format API response
-                        const quote = {
-                            outputAmount: parseFloat(outputAmount).toFixed(6),
-                            rate: `1 ${this.fromToken.symbol} = ${rate.toLocaleString(undefined, {maximumFractionDigits: 2})} ${this.toToken.symbol}`,
-                            priceImpact: apiQuote.priceImpact || '< 0.01%',
-                            networkFee: apiQuote.gasFee || apiQuote.networkFee || '~$5.00',
-                            route: apiQuote.protocol || apiQuote.route || 'RocketX Best Route',
-                            minReceived: apiQuote.minReceived || `${(parseFloat(outputAmount) * 0.99).toFixed(6)} ${this.toToken.symbol}`
-                        };
-
-                        console.log('✅ Quote received from RocketX:', quote);
-                        return quote;
-
-                    } catch (apiError) {
-                        console.warn('RocketX API quote failed, using CoinGecko fallback:', apiError.message);
-                        return await this.getMockQuote();
+                    if (validQuotes.length === 0) {
+                        throw new Error('No valid quotes available');
                     }
-                } else {
-                    console.warn('RocketX API not available, using CoinGecko fallback');
+
+                    // Get the best quote (highest savings)
+                    const bestQuote = validQuotes[0];
+
+                    console.log(`✅ Best quote: ${bestQuote.exchangeInfo.title} (saves $${bestQuote.additionalInfo.savingUsd.toFixed(2)})`);
+
+                    // Format for UI
+                    const quote = {
+                        outputAmount: bestQuote.toAmount.toFixed(6),
+                        rate: `1 ${this.fromToken.symbol} = ${bestQuote.toAmount.toLocaleString(undefined, {maximumFractionDigits: 2})} ${this.toToken.symbol}`,
+                        priceImpact: `${(bestQuote.additionalInfo.priceImpact * 100).toFixed(4)}%`,
+                        networkFee: `$${bestQuote.gasFeeUsd.toFixed(2)}`,
+                        route: `${bestQuote.exchangeInfo.title} (${bestQuote.exchangeInfo.exchange_type})`,
+                        minReceived: `${bestQuote.additionalInfo.minRecieved.toFixed(6)} ${this.toToken.symbol}`,
+                        savings: `$${bestQuote.additionalInfo.savingUsd.toFixed(2)}`,
+                        estimatedTime: `~${bestQuote.estTimeInSeconds.avg}s`,
+                        // Store full quote for swap execution
+                        _fullQuote: bestQuote
+                    };
+
+                    console.log('✅ Formatted quote for UI:', quote);
+                    return quote;
+
+                } catch (apiError) {
+                    console.warn('⚠️ RocketX quotation API failed, using CoinGecko fallback:', apiError.message);
                     return await this.getMockQuote();
                 }
             },
