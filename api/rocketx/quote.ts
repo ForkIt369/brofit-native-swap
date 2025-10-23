@@ -1,6 +1,6 @@
 /**
  * RocketX Quotation Edge Function
- * Proxies POST /v1/quotation to get swap/bridge quotes
+ * Proxies POST /v1/quote to get swap/bridge quotes
  * Uses addresses (not IDs) for quotation requests
  *
  * Required params:
@@ -102,8 +102,8 @@ export default async function handler(request: Request) {
       toChain: params.toTokenChainId
     });
 
-    // Fetch quotation from RocketX (POST to /v1/quotation)
-    const data = await fetchJSON(`${ROCKETX_BASE_URL}/v1/quotation`, {
+    // Fetch quotation from RocketX (POST to /v1/quote - corrected endpoint)
+    const data = await fetchJSON(`${ROCKETX_BASE_URL}/v1/quote`, {
       method: 'POST',
       headers: {
         'x-api': apiKey,
