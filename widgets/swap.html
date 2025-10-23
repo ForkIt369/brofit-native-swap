@@ -503,7 +503,7 @@
         <div class="swap-details" id="swapDetails" style="display: none;">
             <div class="detail-row">
                 <span class="detail-label">Rate</span>
-                <span class="detail-value" id="swapRate">1 ETH = 3,000 USDT</span>
+                <span class="detail-value" id="swapRate">-</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Price Impact</span>
@@ -811,29 +811,73 @@
                         return quote;
 
                     } catch (apiError) {
-                        console.warn('RocketX API quote failed, using fallback:', apiError.message);
-                        return this.getMockQuote();
+                        console.warn('RocketX API quote failed, using CoinGecko fallback:', apiError.message);
+                        return await this.getMockQuote();
                     }
                 } else {
-                    console.warn('RocketX API not available, using mock quote');
-                    return this.getMockQuote();
+                    console.warn('RocketX API not available, using CoinGecko fallback');
+                    return await this.getMockQuote();
                 }
             },
 
-            getMockQuote() {
+            async getMockQuote() {
                 const amount = parseFloat(this.fromAmount);
-                const mockRate = 3000; // 1 ETH = 3000 USDT as example
-                const outputAmount = (amount * mockRate).toFixed(6);
-                const minReceived = (amount * mockRate * 0.995).toFixed(6);
 
-                return {
-                    outputAmount,
-                    rate: `1 ${this.fromToken.symbol} = ${mockRate.toLocaleString()} ${this.toToken.symbol}`,
-                    priceImpact: '< 0.01%',
-                    networkFee: '~$5.00',
-                    route: 'Best Route (Demo)',
-                    minReceived: `${minReceived} ${this.toToken.symbol}`
-                };
+                try {
+                    // ✅ Use LIVE prices from CoinGecko backend API instead of hardcoded fake data
+                    console.log('📊 Fetching live price from CoinGecko fallback...');
+
+                    // Map token symbols to CoinGecko IDs
+                    const coinGeckoIds = {
+                        'ETH': 'ethereum',
+                        'BTC': 'bitcoin',
+                        'USDT': 'tether',
+                        'USDC': 'usd-coin',
+                        'DAI': 'dai',
+                        'WETH': 'weth',
+                        'WBTC': 'wrapped-bitcoin'
+                    };
+
+                    const fromCoinId = coinGeckoIds[this.fromToken.symbol] || 'ethereum';
+                    const toCoinId = coinGeckoIds[this.toToken.symbol] || 'tether';
+
+                    const response = await fetch(`/api/coingecko/simple/price?ids=${fromCoinId},${toCoinId}&vs_currencies=usd`);
+
+                    if (!response.ok) {
+                        throw new Error(`CoinGecko API error: ${response.status}`);
+                    }
+
+                    const priceData = await response.json();
+                    const fromPrice = priceData[fromCoinId]?.usd || 0;
+                    const toPrice = priceData[toCoinId]?.usd || 1;
+
+                    if (fromPrice === 0) {
+                        throw new Error('Unable to fetch live price for ' + this.fromToken.symbol);
+                    }
+
+                    // Calculate real exchange rate
+                    const liveRate = fromPrice / toPrice;
+                    const outputAmount = (amount * liveRate).toFixed(6);
+                    const minReceived = (amount * liveRate * 0.99).toFixed(6); // 1% slippage buffer
+
+                    console.log(`✅ Live rate: 1 ${this.fromToken.symbol} = ${liveRate.toLocaleString()} ${this.toToken.symbol}`);
+
+                    return {
+                        outputAmount,
+                        rate: `1 ${this.fromToken.symbol} = ${liveRate.toLocaleString(undefined, {maximumFractionDigits: 2})} ${this.toToken.symbol}`,
+                        priceImpact: 'Unknown',
+                        networkFee: 'Estimate unavailable',
+                        route: 'CoinGecko Spot Price (Fallback)',
+                        minReceived: `${minReceived} ${this.toToken.symbol}`
+                    };
+
+                } catch (error) {
+                    console.error('❌ CoinGecko fallback failed:', error);
+                    showNotification('⚠️ Unable to fetch live prices. Please try again.', 'error', window.BRO_CONSTANTS?.NOTIFICATION_DURATION?.EXTENDED || 8000);
+
+                    // Don't return fake data - return error state
+                    throw new Error('Price API unavailable');
+                }
             },
 
             /* ================================================================
